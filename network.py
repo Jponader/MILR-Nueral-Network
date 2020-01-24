@@ -3,7 +3,7 @@ from modelController import modelController
 from denseLayer import denseLayer
 from flattenLayer import flattenLayer
 from biasLayer import biasLayer
-from activationLayer import activationLayer
+from activationLayer import activationLayer as act
 
 import math
 import numpy as np
@@ -32,8 +32,8 @@ bias2 = np.random.rand(10)
 
 model = modelController()
 model.add(flattenLayer())
-model.add(denseLayer(weights1, bias1))
-model.add(denseLayer(weights2, bias2))
+model.add(denseLayer(weights1, bias1, activationFunc = act.relu))
+model.add(denseLayer(weights2, bias2, activationFunc = act.softmax))
 out = model.forwardPass(inputMat)
 
 print(out)

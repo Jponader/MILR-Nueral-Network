@@ -1,12 +1,31 @@
+import math
+
 class activationLayer:
 
-# how to pass a fucntion to decide which activation fuvntion to call???
-
-
-	def __init__(self, func):
-		print("New Activation Layer")
-		self.func = func
-
-	def forwardPass(self, inputMat):
+	class relu:
 		
-		return 1
+		def forwardPass(inputMat):
+			print("Relu")
+
+			for i in range(0,len(inputMat)):
+
+				if inputMat[i] < 0:
+					inputMat[i]= 0
+
+			return inputMat
+
+
+
+	class softmax:
+		
+		def forwardPass(inputMat):
+			print("softmax")
+			esum = 0
+
+			for i in range(0,len(inputMat)):
+				esum += math.log1p(inputMat[i])
+
+			for i in range(0,len(inputMat)):
+				inputMat[i] = math.log1p(inputMat[i])/esum
+
+			return inputMat

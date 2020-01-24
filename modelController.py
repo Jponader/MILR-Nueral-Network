@@ -20,22 +20,6 @@ class modelController:
 	def add(self, layer):
 		self.model.append(layer)
 
-	def addCategories(self, mapping):
-		#allows for mapping to catergories
-		return 0
-
-	def predict(self, inputMat):
-		out = inputMat
-
-		for layers in self.model:
-			out = layers.forwardPass(out)
-		#change so that they output is a prediction not just the result, correlate the result to something
-		return out
-
-	def accuracyTest(self, dataset, answerset):
-		#take a datset run many predictions and see if the results are any good.
-		return 0
-
 	def forwardPass(self, inputMat):
 		out = inputMat
 
@@ -44,10 +28,33 @@ class modelController:
 
 		return out
 
+#_______________________________________________________________________________________________
+	def addCategories(self, mapping):
+		#allows for mapping to catergories
+		return 0
+
+	def predict(self, inputMat):
+		out = forwardPass(self, inputMat)
+		#change so that they output is a prediction not just the result, correlate the result to something
+		return out
+
+	#Not tested, basically sudo code
+	def accuracyTest(self, dataset, answerset):
+		correct = 0
+
+		for items, answer in datset, answerset:
+			out = prediction(self, items)
+			if out == answer:
+				correct += 1
+
+		return correct / datset.length
+
+
 	def train(self, datset, answerset):
 		#out = forwardPass()
 		return 0
 
+"""
 	def milrIntilization(self,inputMat):
 		#create array showing that each layer is untainted, true weight sizes
 		self.tainted = []
@@ -84,3 +91,5 @@ class modelController:
 	#some form of error identification protocol randomly inserted to detect errors, 
 	#maybe run through program ever so often to test state, while comparing out puts
 	#once find error one has correct starting point and input already now to find proper output
+
+"""

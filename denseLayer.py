@@ -13,15 +13,19 @@ from itertools import zip_longest
 
 class denseLayer:
 
-	def __init__(self, weights, bias):
+	def __init__(self, weights, bias, activationFunc = None):
 		print("New Dense Layer")
 		self.weights = weights
 		self.bias = biasLayer(bias)
+		self.activation = activationFunc
 
 	def forwardPass(self, inputMat):
 		out = np.matmul(inputMat, self.weights)
-		return self.bias.forwardPass(out)
+		out =  self.bias.forwardPass(out)
+		if self.activation is not None:
+			out = self.activation.forwardPass(out)
+		return out
 
 
-	def milrIntilization(self, inputMat, state):
+	#def milrIntilization(self, inputMat, state):
 		#find padded output
