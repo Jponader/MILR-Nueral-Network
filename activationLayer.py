@@ -29,3 +29,12 @@ class activationLayer:
 				inputMat[i] = math.log1p(inputMat[i])/esum
 
 			return inputMat
+
+	class sigmoid:
+
+		def forwardPass(inputMat):
+			print("sigmoid")
+			for i in range(0,len(inputMat)):
+				inputMat[i] = 1 / (1 + math.exp(-inputMat[i]))
+
+				return inputMat
