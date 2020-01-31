@@ -13,17 +13,26 @@ from itertools import zip_longest
 
 class denseLayer:
 
-	def __init__(self, weights, bias, activationFunc = None):
+	def __init__(self,depth, activationFunc = None):
 		print("New Dense Layer")
-		self.weights = weights
-		self.bias = biasLayer(bias)
-		self.activation = activationFunc
+		self.depth = depth
+		self.bias = biasLayer(depth)
+		self.activationLayer = activationLayer(activationFunc)
+
+	def compile(self, inputshape):
+		if len(inputshape) > 2:
+				print("Error: Input Mat not 2d")
+
+		outputShape = (inputshape[0],self.depth )
+		self.weightShape = (inputshape[1], self.depth)
+		self.weights = np.random.rand(inputshape[1], self.depth)
+		return outputShape
+
 
 	def forwardPass(self, inputMat):
 		out = np.matmul(inputMat, self.weights)
 		out =  self.bias.forwardPass(out)
-		if self.activation is not None:
-			out = self.activation.forwardPass(out)
+		out = self.activationLayer.forwardPass(out)
 		return out
 
 

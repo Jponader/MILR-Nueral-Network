@@ -20,10 +20,17 @@ class modelController:
 	def add(self, layer):
 		self.model.append(layer)
 
+	def compile(self, inputShape):
+		for layers in self.model:
+			print(layers)
+			inputShape = layers.compile(inputShape)
+
+
 	def forwardPass(self, inputMat):
 		out = inputMat
 
 		for layers in self.model:
+			print(layers)
 			out = layers.forwardPass(out)
 
 		return out

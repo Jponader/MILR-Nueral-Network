@@ -23,17 +23,13 @@ P = randint(1,maxMatrix)
 
 inputMat = np.random.rand(28,28)
 
-weights1 = np.random.rand(784, 128) 
-bias1 = np.random.rand(128)
-weights2 = np.random.rand(128,10) 
-bias2 = np.random.rand(10)
-
-
 
 model = modelController()
 model.add(flattenLayer())
-model.add(denseLayer(weights1, bias1, activationFunc = act.relu))
-model.add(denseLayer(weights2, bias2, activationFunc = act.softmax))
+model.add(denseLayer(128, activationFunc = act.relu))
+model.add(denseLayer(10, activationFunc = act.softmax))
+
+model.compile((28,28))
 out = model.forwardPass(inputMat)
 
 print(out)

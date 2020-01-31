@@ -13,11 +13,18 @@ from itertools import zip_longest
 
 class convolutionLayer:
 
-	def __init__(self, filters, bias, stride = 1):
+	def __init__(self, filterCount, filterSize,stride = 1, activationFunc = None):
 		print("New Convolution Layer")
-		self.filters = filters
-		self.bias = biasLayer(bias)
+		self.filterCount = filterCount
+		self.filterSize = filterSize
 		self.stride = stride
+		self.bias = biasLayer(filterCount)
+		self.activationLayer = activationLayer(activationFunc)
+
+	def compile(self, inputshape):
+		#to be done calculate aspect size and generate sizes
+		# return output size
+		return inputshape
 
 	def forwardPass(self, inputMat):
 		out = []
@@ -26,6 +33,8 @@ class convolutionLayer:
 			out.append(Convolution(inputMat, filter, self.stride))
 
 		out = np.array(solution)
+		out =  self.bias.forwardPass(out)
+		out = self.activationLayer.forwardPass(out)
 		return out
 
 

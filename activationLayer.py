@@ -2,6 +2,25 @@ import math
 
 class activationLayer:
 
+	def __init__(self, activationFunc = None):
+		print("New Activation Layer")
+		if activationFunc == None:
+			self.activation = activationLayer.empty
+		else:
+			self.activation = activationFunc
+
+	def forwardPass(self, inputMat):
+		return self.activation.forwardPass(inputMat)
+
+	def compile(self, inputShape):
+		return	inputShape
+
+	class empty:
+
+		def forwardPass(inputMat):
+			return inputMat
+
+
 	class relu:
 		
 		def forwardPass(inputMat):
