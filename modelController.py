@@ -4,6 +4,9 @@ from biasLayer import biasLayer
 from convolutionLayer import convolutionLayer
 from activationLayer import activationLayer
 
+from loss import loss
+#from optomizer import optomizer
+
 import math
 import numpy as np
 from random import seed
@@ -20,7 +23,9 @@ class modelController:
 	def add(self, layer):
 		self.model.append(layer)
 
-	def compile(self, inputShape):
+	def compile(self, inputShape, loss = None, optomizer = None):
+		self.loss = loss
+		self.optomizer = optomizer
 		for layers in self.model:
 			print(layers)
 			inputShape = layers.compile(inputShape)
@@ -30,12 +35,47 @@ class modelController:
 		out = inputMat
 
 		for layers in self.model:
-			print(layers)
 			out = layers.forwardPass(out)
 
 		return out
 
+	def trainForward(self, inputMat):
+		store = [inputMat]
+
+		for layers in self.model:
+			store.append(layers.forwardPass(store[-1]))
+
+		return store
+
+
+	def batchWork(self, dataset):
+		out=[]
+		i = 0
+		for item in dataset:
+			out.append(self.forwardPass(item))
+			print(i)
+			i += 1
+
+		out = np.array(out)
+		return out
+
+	def train(self, dataset, answerset, batch = 10, epochs = 1):
+		
+		for epoch in range(0,epochs):
+			for item in range(0,len(dataset)):
+				hold = self.trainForward(dataset[item])
+				loss = self.loss(hold[-1], answerset[item])
+				print(loss)
+
+		return 0
+
+
+
+
 #_______________________________________________________________________________________________
+	
+
+	
 	def addCategories(self, mapping):
 		#allows for mapping to catergories
 		return 0
@@ -57,9 +97,6 @@ class modelController:
 		return correct / datset.length
 
 
-	def train(self, datset, answerset):
-		#out = forwardPass()
-		return 0
 
 """
 	def milrIntilization(self,inputMat):

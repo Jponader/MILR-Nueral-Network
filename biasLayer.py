@@ -10,3 +10,6 @@ class biasLayer:
 		for i in range(0,len(self.bias)):
 			inputMat[i] = inputMat[i] + self.bias[i]
 		return inputMat
+
+	def backPropogation(self, change):
+		self.bias = bias - change

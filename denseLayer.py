@@ -23,17 +23,20 @@ class denseLayer:
 		if len(inputshape) > 2:
 				print("Error: Input Mat not 2d")
 
-		outputShape = (inputshape[0],self.depth )
-		self.weightShape = (inputshape[1], self.depth)
-		self.weights = np.random.rand(inputshape[1], self.depth)
+		outputShape = (self.depth, inputshape[1])
+		self.weightShape = (self.depth, inputshape[0])
+		self.weights = np.random.rand(self.depth, inputshape[0])
 		return outputShape
 
 
 	def forwardPass(self, inputMat):
-		out = np.matmul(inputMat, self.weights)
+		out = np.matmul(self.weights, inputMat)
 		out =  self.bias.forwardPass(out)
 		out = self.activationLayer.forwardPass(out)
 		return out
+
+	def backPropogation(self, gradient):
+		return 0
 
 
 	#def milrIntilization(self, inputMat, state):

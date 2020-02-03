@@ -8,10 +8,10 @@ class flattenLayer:
 
 	def compile(self, inputSize):
 		self.inputSize = inputSize
-		return(1,inputSize[0] ** len(inputSize))
+		return(inputSize[0] ** len(inputSize),1)
 
 	def forwardPass(self, inputMat):
-		return inputMat.flatten()
+		return inputMat.flatten().T
 
 	def backwardPass(self, inputMat):
-		inputMat.reshape(self.inputSize)
+		inputMat.T.reshape(self.inputSize)

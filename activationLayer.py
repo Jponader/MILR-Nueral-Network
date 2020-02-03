@@ -24,8 +24,6 @@ class activationLayer:
 	class relu:
 		
 		def forwardPass(inputMat):
-			print("Relu")
-
 			for i in range(0,len(inputMat)):
 
 				if inputMat[i] < 0:
@@ -38,7 +36,6 @@ class activationLayer:
 	class softmax:
 		
 		def forwardPass(inputMat):
-			print("softmax")
 			esum = 0
 
 			for i in range(0,len(inputMat)):
@@ -52,7 +49,6 @@ class activationLayer:
 	class sigmoid:
 
 		def forwardPass(inputMat):
-			print("sigmoid")
 			for i in range(0,len(inputMat)):
 				inputMat[i] = 1 / (1 + math.exp(-inputMat[i]))
 
