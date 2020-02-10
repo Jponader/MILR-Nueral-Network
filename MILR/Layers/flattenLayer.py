@@ -1,12 +1,20 @@
 import numpy as np
 
+from MILR.Layers.layerNode import layerNode
 
-class flattenLayer:
 
-	def __init__(self):
-		print("New Flatten Layer")
 
-	def compile(self, inputSize):
+class flattenLayer(layerNode):
+
+	def __init__(self, layer, prev = None):
+		super(flattenLayer,self).__init__(prev = prev)
+		self.Tlayer = layer
+		print(layer.name)
+		self.name = layer.name
+		#print(layer.get_config())
+
+
+	def initalize(self, inputSize):
 		self.inputSize = inputSize
 		return(inputSize[0] ** len(inputSize),1)
 

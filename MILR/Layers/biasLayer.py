@@ -1,6 +1,8 @@
 import numpy as np
+from MILR.Layers.layerNode import layerNode
 
-class biasLayer:
+
+class biasLayer(layerNode):
 
 	def __init__(self, bias):
 		print("New Bias Layer")

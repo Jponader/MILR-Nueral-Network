@@ -1,7 +1,3 @@
-from biasLayer import biasLayer
-from activationLayer import activationLayer
-
-
 import math
 import numpy as np
 from random import seed
@@ -10,18 +6,19 @@ from random import random
 from datetime import datetime
 from itertools import zip_longest
 
+from MILR.Layers.layerNode import layerNode
 
-class convolutionLayer:
+
+
+class convolutionLayer(layerNode):
 
 	def __init__(self, filterCount, filterSize,stride = 1, activationFunc = None):
 		print("New Convolution Layer")
 		self.filterCount = filterCount
 		self.filterSize = filterSize
 		self.stride = stride
-		self.bias = biasLayer(filterCount)
-		self.activationLayer = activationLayer(activationFunc)
 
-	def compile(self, inputshape):
+	def initalize(self, inputshape):
 		#to be done calculate aspect size and generate sizes
 		# return output size
 		return inputshape

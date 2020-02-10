@@ -68,5 +68,6 @@ modelNew = keras.models.load_model('model.h5')
 #model.summary()
 
 milr = MILR(model)
+milr.initalize()
 
 

@@ -1,6 +1,9 @@
 import math
 
-class activationLayer:
+from MILR.Layers.layerNode import layerNode
+
+
+class activationLayer(layerNode):
 
 	def __init__(self, activationFunc = None):
 		print("New Activation Layer")
@@ -12,7 +15,7 @@ class activationLayer:
 	def forwardPass(self, inputMat):
 		return self.activation.forwardPass(inputMat)
 
-	def compile(self, inputShape):
+	def initalize(self, inputShape):
 		return	inputShape
 
 	class empty:

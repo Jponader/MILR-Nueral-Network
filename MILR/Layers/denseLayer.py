@@ -1,5 +1,7 @@
-from biasLayer import biasLayer
-from activationLayer import activationLayer
+from MILR import Layers as L
+
+from MILR.Layers.biasLayer import biasLayer
+from MILR.Layers.layerNode import layerNode
 
 
 import math
@@ -11,15 +13,19 @@ from datetime import datetime
 from itertools import zip_longest
 
 
-class denseLayer:
+class denseLayer(layerNode):
 
-	def __init__(self,depth, activationFunc = None):
-		print("New Dense Layer")
-		self.depth = depth
-		self.bias = biasLayer(depth)
-		self.activationLayer = activationLayer(activationFunc)
+	def __init__(self, layer, prev = None):
+		super(denseLayer,self).__init__(prev = prev)
+		self.Tlayer = layer
+		print(layer.name)
+		self.name = layer.name
+		#print(layer.get_config())
+		self.units = layer.get_config()['units']
+		self.use_bias = layer.get_config()['use_bias']
+		self.activationFunc = layer.get_config()['activation']
 
-	def compile(self, inputshape):
+	def initalize(self, inputshape):
 		if len(inputshape) > 2:
 				print("Error: Input Mat not 2d")
 
