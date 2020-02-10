@@ -26,9 +26,8 @@ test_length = 100
 
 model = ResNet50(weights='imagenet')
 
-keras.backend.set_learning_phase(0)
+#keras.backend.set_learning_phase(0)
 
-model.summary()
 
 # Save Weights
 #model.save_weights('weights.h5')
@@ -126,5 +125,9 @@ global_acc1 = top_k_accuracy(labels[:test_length], global_pred,1)
 global_acc5 = top_k_accuracy(labels[:test_length], global_pred,5)
 
 """
+#model.summary()
+
+#print("Type: ")
+#print(type(model))
 
 milr = MILR(model)
