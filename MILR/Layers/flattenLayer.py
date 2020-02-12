@@ -6,12 +6,9 @@ from MILR.Layers.layerNode import layerNode
 
 class flattenLayer(layerNode):
 
-	def __init__(self, layer, prev = None):
-		super(flattenLayer,self).__init__(prev = prev)
-		self.Tlayer = layer
-		print(layer.name)
-		self.name = layer.name
-		#print(layer.get_config())
+	def __init__(self, layer, prev = None, next = None):
+		super(flattenLayer,self).__init__(layer, prev = prev, next = next)
+		
 
 
 	def initalize(self, inputSize):

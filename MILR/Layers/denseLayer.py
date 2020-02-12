@@ -15,12 +15,8 @@ from itertools import zip_longest
 
 class denseLayer(layerNode):
 
-	def __init__(self, layer, prev = None):
-		super(denseLayer,self).__init__(prev = prev)
-		self.Tlayer = layer
-		print(layer.name)
-		self.name = layer.name
-		#print(layer.get_config())
+	def __init__(self, layer, prev = None, next = None):
+		super(denseLayer,self).__init__(layer, prev = prev, next = next)
 		self.units = layer.get_config()['units']
 		self.use_bias = layer.get_config()['use_bias']
 		self.activationFunc = layer.get_config()['activation']

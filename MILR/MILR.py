@@ -36,59 +36,71 @@ class MILR:
 			sys.exit()
 
 		self.milr = M.inputLayer(self.model.layers[0])
-		#self.builder(self.milr)
+		self.tail = self.makeLayer(self.model.layers[-1], None)
+		self.tail.isEnd()
+
+		print("_____Builder______")
+		self.builder(self.tail)
+		print("__________________")
+		self.print()
+
 
 		del self.config
 		del self.waitQ
 		
 
-	def builder(self, head):
+	def builder(self, tail):
 		#print(self.model.get_layer(name=head.name))
 		#nextName = self.config.fromkeys()
 
-		print(head.name)
-		print(self.config[1]['name'])
+		nextName = [i for i in self.config if i['name'] == tail.name][0]['inbound_nodes'][0]
+		if len(nextName) > 1:
+			print("Handling a Split")
+			print("Single Path Handling")
+		nextName = nextName[0][0]
 
-		#while True:
-		nextName = [i for i in self.config if i['name'] == head.name]
-		print(nextName)
+		print(reversed(self.model.layers[:-1]))
 
-	def OldBuild(self):
-		model = self.model
+		for layer in reversed(self.model.layers[:-1]):
+			if layer.name != nextName:
+				continue
 
+			if layer == self.milr.Tlayer:
+				self.milr.setNext(tail)
+				break
 
-		if type(model.layers[0]) != L.InputLayer:
-			print(type(model.layers[0]))
-			print("First Layer not Input Layer")
-			sys.exit()
+			new = self.makeLayer(layer, tail)
+			tail.setPrev(new)
+			tail = new
 
-		milr = M.inputLayer(model.layers[0])
-		head = milr
-		prev = None
+			nextName = [i for i in self.config if i['name'] == tail.name][0]['inbound_nodes'][0]
 
-		for layers in model.layers[1:]:
-			t = type(layers)
+			if len(nextName) > 1:
+				print("Handling a Split")
+				print("Single Path Handling")
+
+			nextName = nextName[0][0]
+
+			
+			
+
+	def makeLayer(self, layers, next):
+		t = type(layers)
+
+		if t == L.Flatten:
+			return M.flattenLayer(layers, next = next)
+
+		elif t == L.Dense:
+			return M.denseLayer(layers, next = next)
+
+		elif t ==  L.InputLayer:
+			self.milr.setNext(next)
+			return self.milr
+
+		else:
 			print(t)
-			#print(layers.get_config())
-			print(layers._inbound_nodes[0])
-
-			if t == L.Flatten:
-				head, prev = head.nextAndMove(M.flattenLayer(layers,prev = prev))
-
-			elif t == L.Dense:
-				head, prev = head.nextAndMove(M.denseLayer(layers,prev = prev))
-
-			else:
-				print(t)
-				print("ERROR:Missing a Layer Type")
-
-		head.isEnd()
-		self.milrModel = milr
-
-		#self.print()
-
-		print(model.get_config())
-		print(type(model.get_config()))
+			print("ERROR:Missing a Layer Type")
+			return M.layerNode(layers, next = next)
 
 	def initalize(self):
 		return
@@ -100,7 +112,7 @@ class MILR:
 
 	#simplified as it doesnt account for splits	
 	def print(self):
-		head = self.milrModel
+		head = self.milr
 
 		while True:
 			print(head)
