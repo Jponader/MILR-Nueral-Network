@@ -15,10 +15,16 @@ class MILR:
 
 	def __init__(self, model):
 		self.model = model
+		self.milrModel = [None for L in model.layers]
 		print("\n\n\n")
 		print(model)
 		#print(model.input_spec)
+		#self.test()
 		self.buildMILRModel()
+
+		for layer in self.milrModel:
+			if layer == None:
+				print("Error: We have a None")
 
 
 
@@ -27,61 +33,68 @@ class MILR:
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
-		print(self.config)
-		self.waitQ = []
 
 		if type(self.model.layers[0]) != L.InputLayer:
 			print(type(self.model.layers[0]))
 			print("First Layer not Input Layer")
 			sys.exit()
 
-		self.milr = M.inputLayer(self.model.layers[0])
-		self.tail = self.makeLayer(self.model.layers[-1], None)
-		self.tail.isEnd()
+		self.milrHead = M.inputLayer(self.model.layers[0])
+		self.milrModel[0] = self.milrHead
+		tail = self.makeLayer(self.model.layers[-1], None)
+		tail.isEnd()
+		self.milrModel[-1] = tail
 
 		print("_____Builder______")
-		self.builder(self.tail)
+		self.builder(tail)
 		print("__________________")
-		self.print()
+		print(len(self.milrModel))
+		print(len(self.model.layers))
+		self.print(self.milrHead)
+		
 
 
 		del self.config
-		del self.waitQ
 		
 
 	def builder(self, tail):
-		#print(self.model.get_layer(name=head.name))
-		#nextName = self.config.fromkeys()
+		nextName = []
+		layer = self.model.layers
 
-		nextName = [i for i in self.config if i['name'] == tail.name][0]['inbound_nodes'][0]
-		if len(nextName) > 1:
-			print("Handling a Split")
-			print("Single Path Handling")
-		nextName = nextName[0][0]
+		nameSet = [i for i in self.config if i['name'] == tail.name][0]['inbound_nodes'][0]
+		for names in nameSet:
+			nextName.append([names[0],tail])
 
-		print(reversed(self.model.layers[:-1]))
 
-		for layer in reversed(self.model.layers[:-1]):
-			if layer.name != nextName:
-				continue
+		for pos in range(len(self.milrModel)-1, -1 , -1):
+			print(pos)
+			for j in range(len(nextName)-1, -1,-1):
+				if nextName[j][0] == layer[pos].name:
+					print()
+					if self.milrModel[pos] != None:
+						new = self.milrModel[pos]
+						new.setNext(nextName[j][1])
 
-			if layer == self.milr.Tlayer:
-				self.milr.setNext(tail)
-				break
+						if new == self.milrHead:
+							nextName[j][1].setPrev(self.milrHead)
+						else:
+							nextName[j][1].setPrev(new)
 
-			new = self.makeLayer(layer, tail)
-			tail.setPrev(new)
-			tail = new
+						del nextName[j]
+						break
+					else:
+						new = self.makeLayer(layer[pos], nextName[j][1])
+						self.milrModel[pos] = new
 
-			nextName = [i for i in self.config if i['name'] == tail.name][0]['inbound_nodes'][0]
+					nextName[j][1].setPrev(new)
+					print(nextName)
+					del nextName[j]
+					print(nextName)
 
-			if len(nextName) > 1:
-				print("Handling a Split")
-				print("Single Path Handling")
+					nameSet = [i for i in self.config if i['name'] == new.name][0]['inbound_nodes'][0]
+					for names in nameSet:
+						nextName.append([names[0],new])
 
-			nextName = nextName[0][0]
-
-			
 			
 
 	def makeLayer(self, layers, next):
@@ -110,21 +123,42 @@ class MILR:
 		#print(inputShape)
 	
 
-	#simplified as it doesnt account for splits	
-	def print(self):
-		head = self.milr
 
+	def print(self, head):
+		print("Start Print")
 		while True:
 			print(head)
 			if head.hasNext():
-				head = head.move()
+				nexts = head.getNext()
+				#print(nexts)
+
+				if head.isUnion():
+					print("Is Unions")
+					#print(head.getPrev())
+					return head
+
+				if head.isSplit():
+					print("SPLIT")
+					for n in nexts:
+						head = self.print(n)
+					head = head.getNext()[0]
+				else: 
+					head = nexts[0]
 			else :
+				print("End")
 				break
 
 
 	def test(self):
 		model = self.model
 
+		milrModel = [[model.layers],[None for L in model.layers]]
+		array = model.layers
+		print(milrModel)
+		print(type(milrModel))
+
+
+"""
 		for layers in model.layers:
 			print()
 
@@ -143,4 +177,4 @@ class MILR:
 				#print(layers.variables[0])
 				#print(type(layers.variables[0]))
 			#print(layers.submodules)
-
+"""

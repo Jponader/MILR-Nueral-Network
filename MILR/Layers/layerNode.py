@@ -1,34 +1,51 @@
 class layerNode:
 
-	def __init__(self, layer, prev=None, next = None, end = False, secondIn = False, secondOut = False):
-		self.prev = prev
-		self.next = next
+	def __init__(self, layer, prev = None, next = None, end = False):
+		self.prev = [prev]
+		self.next = [next]
 		self.end = end
-		self.secondIn = secondIn
-		self.secondOut = secondOut
 		self.Tlayer = layer
 		print(layer.name)
 		self.name = layer.name
 
+	def __str__(self):
+		return self.name 
+		#+ " Next " + str(len(self.next)) + " Prev " + str(len(self.prev))
 
 	def setNext(self, next):
-		self.next = next
+		if self.next[0] == None:
+			self.next[0] = next
+		else:
+			self.next.append(next)
 
 	def setPrev(self, prev):
-		self.prev = prev
-
-	def nextAndMove(self,node):
-		self.next = node
-		return node, self
+		if self.prev[0] == None:
+			self.prev[0] = prev
+		else:
+			self.prev.append(prev)
 
 	def hasNext(self):
-		return not (self.end)
+		return not (self.end) and self.next[0] != None
 
 	def isEnd(self):
 		self.end = True
 
-	def move(self):
+	def getNext(self):
 		return self.next
 
+	def getPrev(self):
+		return self.prev
+
+	def isSplit(self):
+		if len(self.next) > 1:
+			return True
+		else:
+			return False
+
+	def isUnion(self):
+		if len(self.prev) > 1:
+			return True
+		else:
+			return False
 
 
