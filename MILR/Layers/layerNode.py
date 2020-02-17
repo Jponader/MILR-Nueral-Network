@@ -7,10 +7,15 @@ class layerNode:
 		self.Tlayer = layer
 		print(layer.name)
 		self.name = layer.name
+		self.inputLayer = False
 
 	def __str__(self):
 		return self.name 
 		#+ " Next " + str(len(self.next)) + " Prev " + str(len(self.prev))
+
+	def setAsInputLayer(self):
+		self.inputLayer = True
+		self.inputShape = self.Tlayer.get_config()['batch_input_shape'][1:]
 
 	def setNext(self, next):
 		if self.next[0] == None:

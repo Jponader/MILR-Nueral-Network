@@ -33,13 +33,10 @@ class MILR:
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
+		print(self.config)
 
-		if type(self.model.layers[0]) != L.InputLayer:
-			print(type(self.model.layers[0]))
-			print("First Layer not Input Layer")
-			sys.exit()
-
-		self.milrHead = M.inputLayer(self.model.layers[0])
+		self.milrHead = self.makeLayer(self.model.layers[0], None)
+		self.milrHead.setAsInputLayer()
 		self.milrModel[0] = self.milrHead
 		tail = self.makeLayer(self.model.layers[-1], None)
 		tail.isEnd()
@@ -52,8 +49,6 @@ class MILR:
 		print(len(self.model.layers))
 		self.print(self.milrHead)
 		
-
-
 		del self.config
 		
 
@@ -107,8 +102,13 @@ class MILR:
 			return M.denseLayer(layers, next = next)
 
 		elif t ==  L.InputLayer:
-			self.milr.setNext(next)
-			return self.milr
+			return M.inputLayer(layers,next = next)
+
+		elif t == L.ZeroPadding2D:
+			return M.zeroPaddingLayer(layers,next = next)
+
+		elif t == L.Conv2D:
+			return M.convolutionLayer(layers,next = next)
 
 		else:
 			print(t)

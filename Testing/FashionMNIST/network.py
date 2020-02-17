@@ -62,7 +62,7 @@ print('Test accuracy:', test_acc)
 # Save Entire Model
 #model.save('model.h5')
 
-modelNew = keras.models.load_model('model.h5')
+#modelNew = keras.models.load_model('model.h5')
 
 
 #model.summary()
