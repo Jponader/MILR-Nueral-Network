@@ -21,13 +21,9 @@ import pathlib
 import random
 import h5py
 
-test_length = 100
-
-
 #model = ResNet50(weights='imagenet')
 
 #keras.backend.set_learning_phase(0)
-
 
 # Save Weights
 #model.save_weights('weights.h5')
