@@ -48,6 +48,7 @@ class MILR:
 		print(len(self.milrModel))
 		print(len(self.model.layers))
 		self.print(self.milrHead)
+		self.splitprint(self.milrHead)
 		
 		del self.config
 		
@@ -125,28 +126,78 @@ class MILR:
 
 
 	def print(self, head):
-		print("Start Print")
 		while True:
-			print(head)
 			if head.hasNext():
 				nexts = head.getNext()
-				#print(nexts)
 
 				if head.isUnion():
-					print("Is Unions")
-					#print(head.getPrev())
+					print("		Union")
 					return head
 
 				if head.isSplit():
-					print("SPLIT")
+					print(head)
+					print("		SPLIT")
 					for n in nexts:
 						head = self.print(n)
+					print(head)
 					head = head.getNext()[0]
 				else: 
+					print(head)
 					head = nexts[0]
 			else :
-				print("End")
 				break
+
+# Assumption only one split is going on at a time, a split is only two items
+	def splitprint(self, head):
+		left = head
+		right = None
+
+		while True:
+			if right == None:
+				print("	",left)
+				if not left.hasNext():
+					return
+				next = left.getNext()
+				if left.isSplit():
+					if len(next) > 2:
+						print("ERROR")
+						sys.exit()
+					right = next[1]
+				left = next[0]
+
+			elif left == right:
+				print("	",left)
+				right = None
+				next = left.getNext()
+				if left.isSplit():
+					if len(next) > 2:
+						print("ERROR")
+						sys.exit()
+					right = next[1]
+				left = next[0]
+
+			elif left.isUnion():
+				print("	|	", right)
+				if right.isSplit():
+					print("ERROR")
+					sys.exit()
+				right = right.getNext()[0]
+
+			elif right.isUnion():
+				print(left, "	      |")
+				if left.isSplit():
+					print("ERROR")
+					sys.exit()
+				left = left.getNext()[0]
+
+			else:
+				print(left,"	", right)
+				right = right.getNext()[0]
+				left = left.getNext()[0]
+				if left.isSplit() or right.isSplit():
+					print("ERROR")
+					sys.exit()
+			
 
 
 	def test(self):
