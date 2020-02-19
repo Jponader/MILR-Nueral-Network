@@ -7,10 +7,10 @@ from MILR.MILR import MILR
 # TensorFlow and tf.keras
 import tensorflow as tf
 from tensorflow import keras
-from keras. datasets import mnist
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, InputLayer
-from keras import backend as k
+from tensorflow.keras. datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, InputLayer
+from tensorflow.keras import backend as k
 
 # Helper libraries
 import numpy as np
@@ -50,9 +50,9 @@ num_category = 10
 y_train = keras.utils.to_categorical(y_train, num_category)
 y_test = keras.utils.to_categorical(y_test, num_category)
 
-model = Sequential()
+"""
 inputs = keras.Input(shape=input_shape)
-x = Conv2D(32, kernel_size=(3, 3),activation='relu')(x)
+x = Conv2D(32, kernel_size=(3, 3),activation='relu')(inputs)
 x = Conv2D(64, (3, 3), activation='relu')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
 x = Dropout(0.25)(x)
@@ -69,17 +69,18 @@ model.compile(optimizer='adam',
 
 model.fit(X_train, y_train, epochs=10, batch_size = 128)
 
+
 test_loss, test_acc = model.evaluate(X_test, y_test)
 
 print('Test accuracy:', test_acc)
 
 # Save Weights
-#model.save_weights('weights.h5')
+model.save_weights('weights.h5')
 
 # Save Entire Model
 model.save('model.h5')
 
-
+"""
 model= keras.models.load_model('model.h5')
 
 #model.summary()

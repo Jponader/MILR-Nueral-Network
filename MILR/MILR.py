@@ -17,7 +17,7 @@ class MILR:
 		self.model = model
 		self.milrModel = [None for L in model.layers]
 		print("\n\n\n")
-		print(model)
+		#print(model)
 		#print(model.input_spec)
 		#self.test()
 		self.buildMILRModel()
@@ -33,7 +33,7 @@ class MILR:
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
-		print(self.config)
+		#print(self.config)
 
 		self.milrHead = self.makeLayer(self.model.layers[0], None)
 		self.milrHead.setAsInputLayer()
@@ -82,9 +82,9 @@ class MILR:
 						self.milrModel[pos] = new
 
 					nextName[j][1].setPrev(new)
-					print(nextName)
+					#print(nextName)
 					del nextName[j]
-					print(nextName)
+					#print(nextName)
 
 					nameSet = [i for i in self.config if i['name'] == new.name][0]['inbound_nodes'][0]
 					for names in nameSet:
