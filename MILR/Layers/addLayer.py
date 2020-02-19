@@ -1,5 +1,5 @@
 from MILR.Layers.layerNode import layerNode
-
+import MILR.status as STAT
 
 class addLayer(layerNode):
 
@@ -8,6 +8,5 @@ class addLayer(layerNode):
 		config = layer.get_config()
 
 
-	def layerInitilizer(self,inputSize):
-		print("addLayer")
-		return inputSize
+	def layerInitilizer(self, inputData, status):
+		return inputData, status

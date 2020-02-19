@@ -3,6 +3,7 @@ from tensorflow import keras
 import numpy as np
 
 from MILR.Layers.layerNode import layerNode
+import MILR.status as STAT
 
 class poolingLayer2d(layerNode):
 
@@ -12,6 +13,5 @@ class poolingLayer2d(layerNode):
 		self.poolSize = config['pool_size']
 		self.stride = config['strides']
 
-	def layerInitilizer(self, inputSize):
-		print("pool")
-		return inputSize
+	def layerInitilizer(self, inputData, status):
+		return inputData, status

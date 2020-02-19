@@ -4,11 +4,11 @@ from random import seed
 from random import randint
 from random import random
 from datetime import datetime
-from itertools import zip_longest
 
 from MILR.Layers.activationLayer import activationLayer
 from MILR.Layers.biasLayer import biasLayer
 from MILR.Layers.layerNode import layerNode
+import MILR.status as STAT
 
 
 
@@ -27,8 +27,7 @@ class convolutionLayer2d(layerNode):
 
 
 		
-	def layerInitilizer(self, inputSize):
-		print("conv")
-		return inputSize
+	def layerInitilizer(self, inputData, status):
+		return inputData, status
 	
 		

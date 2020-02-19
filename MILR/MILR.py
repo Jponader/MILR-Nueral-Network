@@ -10,6 +10,7 @@ from tensorflow.keras import layers as L
 
 # Handles the MILR Layers Classes
 import MILR.Layers as M
+import MILR.status as STAT
 from tensorflow.python.keras.layers.normalization import BatchNormalization
 
 class MILR:
@@ -116,7 +117,9 @@ class MILR:
 		elif t == L.Flatten:
 			return M.flattenLayer(layers, next = next)
 
-		#Passthrough Layers,do no operations in inference mode
+		# Passthrough Layers,do no operations in inference
+		# No change in shape
+		# Invertible and No weight modification
 		elif t == L.Dropout or t == L.InputLayer:
 			return M.layerNode(layers, next = next)
 

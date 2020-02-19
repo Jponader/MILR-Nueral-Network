@@ -1,6 +1,7 @@
 import math
 
 from MILR.Layers.layerNode import layerNode
+import MILR.status as STAT
 
 
 class activationLayer(layerNode):
@@ -9,9 +10,8 @@ class activationLayer(layerNode):
 		super(activationLayer,self).__init__(layer, prev = prev, next = next)
 		self.func = layer.get_config()['activation']
 
-	def layerInitilizer(self, inputSize):
-		print("activation")
-		return inputSize
+	def layerInitilizer(self, inputData, status):
+		return inputData, status
 
 # if sublayer use the functions, but not have own object
 

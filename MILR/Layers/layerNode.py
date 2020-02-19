@@ -1,3 +1,13 @@
+import MILR.status as STAT
+
+import sys
+import math
+import numpy as np
+from random import seed
+from random import randint
+from datetime import datetime
+
+
 class layerNode:
 
 	def __init__(self, layer, prev = None, next = None, end = False):
@@ -15,28 +25,46 @@ class layerNode:
 		return self.name 
 		#+ " Next " + str(len(self.next)) + " Prev " + str(len(self.prev))
 
-	def initilize(self, inputSize):
+	def initilize(self, inputSize, status = STAT.START, inputData = None):
 		self.inputSize.append(inputSize)
 		if self.canStartInilize():
-			#self.outputSize = self.layerInitilizer(inputSize)
 			if len(self.inputSize) > 1:
 				self.outputSize = self.Tlayer.compute_output_shape(self.inputSize)
 			else:
 				self.outputSize = self.Tlayer.compute_output_shape(self.inputSize[0])
 			print(self, self.outputSize)
+
+			if status == STAT.START:
+				inputData = self.startMetadata()
+
+			if inputData == None:
+				print("ERROR : No input data for next round")
+				sys.exit()
+
+			outputData, status = self.layerInitilizer(inputData, status)
 			if not self.end:
 				for n in self.next:
-					n.initilize(self.outputSize)
+					n.initilize(self.outputSize, status, inputData = outputData)
 
 	# Assumption of Passthrough Layers will have same input as oputput
-	def layerInitilizer(self,inputSize):
-		return inputSize
+	def layerInitilizer(self, inputData, status):
+		return inputData, status
 
 	def canStartInilize(self):
 		if len(self.inputSize) == len(self.prev):
 			return True
 		else:
 			return False
+
+	def startMetadata(self):
+		self.checkpoint = True
+		self.status = STAT.START
+		seed()
+		self.seed = randint(0,10000)
+		seed(self.seed)
+
+		#Need to figure out data type to pass for input data
+		return None
 
 	def setAsInputLayer(self):
 		self.inputLayer = True

@@ -1,5 +1,5 @@
 from MILR.Layers.layerNode import layerNode
-
+import MILR.status as STAT
 
 class batchNormalization(layerNode):
 
@@ -10,6 +10,5 @@ class batchNormalization(layerNode):
 		self.scale = config['scale']
 		self.epsilon = config['epsilon']
 
-	def layerInitilizer(self, inputSize):
-		print("batch")
-		return inputSize
+	def layerInitilizer(self, inputData, status):
+		return inputData, status

@@ -3,7 +3,7 @@ from MILR import Layers as L
 from MILR.Layers.activationLayer import activationLayer
 from MILR.Layers.biasLayer import biasLayer
 from MILR.Layers.layerNode import layerNode
-
+import MILR.status as STAT
 
 
 import math
@@ -28,9 +28,8 @@ class denseLayer(layerNode):
 
 
 
-	def layerInitilizer(self, inputSize):
-		print("dense")
-		return inputSize
+	def layerInitilizer(self, inputData, status):
+		return inputData, status
 
 
 
