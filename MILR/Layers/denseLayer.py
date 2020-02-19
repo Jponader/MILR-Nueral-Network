@@ -28,7 +28,9 @@ class denseLayer(layerNode):
 
 
 
-
+	def layerInitilizer(self, inputSize):
+		print("dense")
+		return inputSize
 
 
 

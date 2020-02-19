@@ -9,3 +9,7 @@ class batchNormalization(layerNode):
 		self.center = config['center']
 		self.scale = config['scale']
 		self.epsilon = config['epsilon']
+
+	def layerInitilizer(self, inputSize):
+		print("batch")
+		return inputSize

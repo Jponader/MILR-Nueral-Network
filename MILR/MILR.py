@@ -14,6 +14,10 @@ from tensorflow.python.keras.layers.normalization import BatchNormalization
 
 class MILR:
 
+	# model -> original model of network
+	# milrModel -> array of milr layers that have direct corelation to model layer order
+	# milrHead -> first layer of layer linked list model, same layers as in the milrModel
+
 	def __init__(self, model):
 		self.model = model
 		self.milrModel = [None for L in model.layers]
@@ -25,32 +29,31 @@ class MILR:
 			if layer == None:
 				print("Error: We have a None")
 
+		self.splitprint(self.milrHead)
+		self.initalize()
 
+#phase 1:
+	# walk through the model setting inputs, output pairs 
 
+			## DONE!!!
+#phase 2:
+	# passback meta-data
+	def initalize(self):
+		self.inputDim = tf.TensorShape(((None,)+ self.inputDim))
+		self.milrHead.initilize(self.inputDim)
 
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
-
 		self.milrHead = self.makeLayer(self.model.layers[0], None)
-		self.milrHead.setAsInputLayer()
+		self.inputDim = self.milrHead.setAsInputLayer()
 		self.milrModel[0] = self.milrHead
 		tail = self.makeLayer(self.model.layers[-1], None)
 		tail.isEnd()
 		self.milrModel[-1] = tail
-
-		print("_____Builder______")
-		print(tail)
 		self.builder(tail)
-		print(self.milrHead)
-		print("__________________")
-		#print(len(self.milrModel))
-		#print(len(self.model.layers))
-		#self.print(self.milrHead)
-		self.splitprint(self.milrHead)
 		del self.config
 		
-
 	def builder(self, tail):
 		nextName = []
 		layer = self.model.layers
@@ -61,7 +64,6 @@ class MILR:
 		for pos in range(len(self.milrModel)-1, -1 , -1):
 			for j in range(len(nextName)-1, -1,-1):
 				if nextName[j][0] == layer[pos].name:
-					print()
 					if self.milrModel[pos] != None:
 						new = self.milrModel[pos]
 						new.setNext(nextName[j][1])
@@ -84,12 +86,8 @@ class MILR:
 					for names in nameSet:
 						nextName.append([names[0],new])
 
-			
-
 	def makeLayer(self, layers, next):
 		t = type(layers)
-
-		#print(L)
 
 		if t == BatchNormalization:
 			return M.batchNormalization(layers, next = next)
@@ -125,17 +123,9 @@ class MILR:
 		else:
 			print(t)
 			print("ERROR:Missing a Layer Type")
-			return M.layerNode(layers, next = next)
+			return M.layerNode(layers, next = next)	
 
-	def initalize(self):
-		return
-
-		#milr = self.milrModel
-		#inputShape = milr.getShape()
-		#print(inputShape)
-	
-
-
+#Prints sinlge list with signalling of splits and unions
 	def print(self, head):
 		while True:
 			if head.hasNext():

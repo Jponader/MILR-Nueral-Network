@@ -11,3 +11,7 @@ class poolingLayer2d(layerNode):
 		config = layer.get_config()
 		self.poolSize = config['pool_size']
 		self.stride = config['strides']
+
+	def layerInitilizer(self, inputSize):
+		print("pool")
+		return inputSize

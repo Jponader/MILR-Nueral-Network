@@ -9,7 +9,9 @@ class activationLayer(layerNode):
 		super(activationLayer,self).__init__(layer, prev = prev, next = next)
 		self.func = layer.get_config()['activation']
 
-
+	def layerInitilizer(self, inputSize):
+		print("activation")
+		return inputSize
 
 # if sublayer use the functions, but not have own object
 

@@ -10,3 +10,7 @@ class zeroPaddingLayer(layerNode):
 		super(zeroPaddingLayer,self).__init__(layer, prev = prev, next = next)
 		self.padding = layer.get_config()['padding']
 
+
+	def layerInitilizer(self, inputSize):
+		print("padding")
+		return inputSize

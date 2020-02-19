@@ -1,6 +1,8 @@
 import numpy as np
 
 from MILR.Layers.layerNode import layerNode
+from tensorflow.keras import layers as L
+import tensorflow as tf
 
 
 
@@ -9,6 +11,8 @@ class flattenLayer(layerNode):
 	def __init__(self, layer, prev = None, next = None):
 		super(flattenLayer,self).__init__(layer, prev = prev, next = next)
 
+	def layerInitilizer(self, inputSize):
+		return inputSize
 
 	def initalize(self, inputSize):
 		self.inputSize = inputSize

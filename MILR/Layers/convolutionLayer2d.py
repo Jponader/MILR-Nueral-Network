@@ -27,6 +27,8 @@ class convolutionLayer2d(layerNode):
 
 
 		
-
+	def layerInitilizer(self, inputSize):
+		print("conv")
+		return inputSize
 	
 		
