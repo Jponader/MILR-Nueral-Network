@@ -1,7 +1,9 @@
 from MILR import Layers as L
 
+from MILR.Layers.activationLayer import activationLayer
 from MILR.Layers.biasLayer import biasLayer
 from MILR.Layers.layerNode import layerNode
+
 
 
 import math
@@ -17,9 +19,18 @@ class denseLayer(layerNode):
 
 	def __init__(self, layer, prev = None, next = None):
 		super(denseLayer,self).__init__(layer, prev = prev, next = next)
-		self.units = layer.get_config()['units']
-		self.use_bias = layer.get_config()['use_bias']
-		self.activationFunc = layer.get_config()['activation']
+		config = layer.get_config()
+		self.units = config['units']
+		
+		#Common
+		self.hasBias = config['use_bias']
+		self.activationFunc = config['activation']
+
+
+
+
+
+
 
 	def initalize(self, inputshape):
 		if len(inputshape) > 2:

@@ -10,16 +10,15 @@ from tensorflow.keras import layers as L
 
 # Handles the MILR Layers Classes
 import MILR.Layers as M
+from tensorflow.python.keras.layers.normalization import BatchNormalization
 
 class MILR:
 
 	def __init__(self, model):
 		self.model = model
 		self.milrModel = [None for L in model.layers]
-		print("\n\n\n")
-		#print(model)
-		#print(model.input_spec)
-		#self.test()
+		print("\n")
+
 		self.buildMILRModel()
 
 		for layer in self.milrModel:
@@ -28,12 +27,10 @@ class MILR:
 
 
 
-#Current Issue, names are for inputs not outputs....
-#Solution Build backwards....
+
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
-		#print(self.config)
 
 		self.milrHead = self.makeLayer(self.model.layers[0], None)
 		self.milrHead.setAsInputLayer()
@@ -43,27 +40,25 @@ class MILR:
 		self.milrModel[-1] = tail
 
 		print("_____Builder______")
+		print(tail)
 		self.builder(tail)
+		print(self.milrHead)
 		print("__________________")
-		print(len(self.milrModel))
-		print(len(self.model.layers))
-		self.print(self.milrHead)
+		#print(len(self.milrModel))
+		#print(len(self.model.layers))
+		#self.print(self.milrHead)
 		self.splitprint(self.milrHead)
-		
 		del self.config
 		
 
 	def builder(self, tail):
 		nextName = []
 		layer = self.model.layers
-
 		nameSet = [i for i in self.config if i['name'] == tail.name][0]['inbound_nodes'][0]
 		for names in nameSet:
 			nextName.append([names[0],tail])
 
-
 		for pos in range(len(self.milrModel)-1, -1 , -1):
-			print(pos)
 			for j in range(len(nextName)-1, -1,-1):
 				if nextName[j][0] == layer[pos].name:
 					print()
@@ -83,9 +78,7 @@ class MILR:
 						self.milrModel[pos] = new
 
 					nextName[j][1].setPrev(new)
-					#print(nextName)
 					del nextName[j]
-					#print(nextName)
 
 					nameSet = [i for i in self.config if i['name'] == new.name][0]['inbound_nodes'][0]
 					for names in nameSet:
@@ -96,20 +89,38 @@ class MILR:
 	def makeLayer(self, layers, next):
 		t = type(layers)
 
-		if t == L.Flatten:
-			return M.flattenLayer(layers, next = next)
+		#print(L)
+
+		if t == BatchNormalization:
+			return M.batchNormalization(layers, next = next)
+
+		elif t == L.Conv2D:
+			return M.convolutionLayer2d(layers,next = next)
 
 		elif t == L.Dense:
 			return M.denseLayer(layers, next = next)
 
-		elif t ==  L.InputLayer:
-			return M.inputLayer(layers,next = next)
+		elif t == L.Activation:
+			return M.activationLayer(layers,next = next)
+
+		elif t == L.Add:
+			return M.addLayer(layers,next = next)
 
 		elif t == L.ZeroPadding2D:
 			return M.zeroPaddingLayer(layers,next = next)
 
-		elif t == L.Conv2D:
-			return M.convolutionLayer(layers,next = next)
+		elif t == L.MaxPooling2D:
+			return M.poolingLayer2d(layers,next = next)
+
+		elif t == L.GlobalAveragePooling2D:
+			return M.globalPoolingLayer(layers,next = next)
+
+		elif t == L.Flatten:
+			return M.flattenLayer(layers, next = next)
+
+		#Passthrough Layers,do no operations in inference mode
+		elif t == L.Dropout or t == L.InputLayer:
+			return M.layerNode(layers, next = next)
 
 		else:
 			print(t)
@@ -198,34 +209,3 @@ class MILR:
 					print("ERROR")
 					sys.exit()
 			
-
-
-	def test(self):
-		model = self.model
-
-		milrModel = [[model.layers],[None for L in model.layers]]
-		array = model.layers
-		print(milrModel)
-		print(type(milrModel))
-
-
-"""
-		for layers in model.layers:
-			print()
-
-			print(type(layers))
-			#Keras Layers Core
-			print(layers.get_config())
-
-			#Keras Engine Base_layer
-			#print(layers.weights)
-
-			#Module Module
-			print(layers.name)
-			#print(layers.name_scope)
-			#print(layers.variables)
-			#if len(layers.variables) > 0:
-				#print(layers.variables[0])
-				#print(type(layers.variables[0]))
-			#print(layers.submodules)
-"""

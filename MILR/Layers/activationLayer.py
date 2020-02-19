@@ -5,12 +5,14 @@ from MILR.Layers.layerNode import layerNode
 
 class activationLayer(layerNode):
 
-	def __init__(self, activationFunc = None):
-		print("New Activation Layer")
-		if activationFunc == None:
-			self.activation = activationLayer.empty
-		else:
-			self.activation = activationFunc
+	def __init__(self, layer, prev = None, next = None):
+		super(activationLayer,self).__init__(layer, prev = prev, next = next)
+		self.func = layer.get_config()['activation']
+
+
+
+# if sublayer use the functions, but not have own object
+
 
 	def forwardPass(self, inputMat):
 		return self.activation.forwardPass(inputMat)

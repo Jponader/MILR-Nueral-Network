@@ -8,6 +8,8 @@ class layerNode:
 		print(layer.name)
 		self.name = layer.name
 		self.inputLayer = False
+		self.inputSize = None
+		self.outputSize = None
 
 	def __str__(self):
 		return self.name 
@@ -15,7 +17,7 @@ class layerNode:
 
 	def setAsInputLayer(self):
 		self.inputLayer = True
-		self.inputShape = self.Tlayer.get_config()['batch_input_shape'][1:]
+		self.inputSize = self.Tlayer.get_config()['batch_input_shape'][1:]
 
 	def setNext(self, next):
 		if self.next[0] == None:
