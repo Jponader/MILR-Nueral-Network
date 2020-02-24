@@ -26,8 +26,11 @@ class convolutionLayer2d(layerNode):
 		self.activationFunc = config['activation']
 
 
-		
+
+	#Need to seperate out Bias
 	def layerInitilizer(self, inputData, status):
-		return inputData, status
+		out = self.Tlayer.call(inputData)
+		print(out.shape)
+		return out, status
 	
 		

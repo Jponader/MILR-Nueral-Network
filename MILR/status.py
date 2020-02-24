@@ -6,3 +6,6 @@ NO_INV = 0
 	
 # Needs to be Invertible
 REQ_INV = 1
+
+# Union, pause till both paths merge
+UNION = 2

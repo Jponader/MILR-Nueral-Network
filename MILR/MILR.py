@@ -46,6 +46,7 @@ class MILR:
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
+		#print(self.config)
 		self.milrHead = self.makeLayer(self.model.layers[0], None)
 		self.inputDim = self.milrHead.setAsInputLayer()
 		self.milrModel[0] = self.milrHead

@@ -14,7 +14,9 @@ class flattenLayer(layerNode):
 		super(flattenLayer,self).__init__(layer, prev = prev, next = next)
 
 	def layerInitilizer(self, inputData, status):
-		return inputData, status
+		out = self.Tlayer.call(inputData)
+		print(out.shape)
+		return out, status
 
 	def initalize(self, inputSize):
 		self.inputSize = inputSize

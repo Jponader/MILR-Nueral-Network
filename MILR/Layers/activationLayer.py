@@ -11,7 +11,16 @@ class activationLayer(layerNode):
 		self.func = layer.get_config()['activation']
 
 	def layerInitilizer(self, inputData, status):
-		return inputData, status
+		out = self.Tlayer.call(inputData)
+		print(out.shape)
+		return out, status
+
+
+
+
+
+
+
 
 # if sublayer use the functions, but not have own object
 

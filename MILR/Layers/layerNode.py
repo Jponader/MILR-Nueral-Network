@@ -3,9 +3,10 @@ import MILR.status as STAT
 import sys
 import math
 import numpy as np
-from random import seed
-from random import randint
+import tensorflow as tf
+from random import randint, seed
 from datetime import datetime
+
 
 
 class layerNode:
@@ -21,6 +22,7 @@ class layerNode:
 		self.inputSize = []
 		self.outputSize = None
 
+
 	def __str__(self):
 		return self.name 
 		#+ " Next " + str(len(self.next)) + " Prev " + str(len(self.prev))
@@ -35,13 +37,19 @@ class layerNode:
 			print(self, self.outputSize)
 
 			if status == STAT.START:
-				inputData = self.startMetadata()
+				if self.inputLayer:
+					inputData = self.startMetadata()
+					status = STAT.NO_INV
+				else:
+					print("ERROR :Not Start Layer")
+					sys.exit()
 
-			if inputData == None:
+			if inputData is None:
 				print("ERROR : No input data for next round")
 				sys.exit()
 
 			outputData, status = self.layerInitilizer(inputData, status)
+
 			if not self.end:
 				for n in self.next:
 					n.initilize(self.outputSize, status, inputData = outputData)
@@ -61,13 +69,12 @@ class layerNode:
 		self.status = STAT.START
 		seed()
 		self.seed = randint(0,10000)
-		seed(self.seed)
-
-		#Need to figure out data type to pass for input data
-		return None
+		print(self.inputSize[0].as_list()[1:])
+		return tf.convert_to_tensor(np.random.rand(1,*self.inputSize[0].as_list()[1:]),  dtype= self.dtype)
 
 	def setAsInputLayer(self):
 		self.inputLayer = True
+		self.dtype = self.Tlayer.get_config()['dtype']
 		return self.Tlayer.get_config()['batch_input_shape'][1:]
 
 	def setNext(self, next):
