@@ -17,10 +17,12 @@ class layerNode:
 		self.end = end
 		self.Tlayer = layer
 		#print(layer.name)
-		self.name = layer.name
 		self.inputLayer = False
-		self.inputSize = self.Tlayer.input_shape
-		self.outputSize = self.Tlayer.output_shape
+
+		#These may be remoavable
+		self.name = layer.name
+		#self.inputSize = self.Tlayer.input_shape
+		#self.outputSize = self.Tlayer.output_shape
 
 
 	def __str__(self):
@@ -33,7 +35,7 @@ class layerNode:
 			inputData = self.startMetadata()
 			status = STAT.NO_INV
 
-		print(self, self.outputSize, self.outputSize)
+		print(self)
 
 		assert inputData is not None, ("ERROR : No input data for next round")
 
@@ -57,7 +59,8 @@ class layerNode:
 
 	def setAsInputLayer(self):
 		self.inputLayer = True
-		self.dtype = self.Tlayer.get_config()['dtype']
+		self.dtype = self.Tlayer.dtype
+		self.inputSize = self.Tlayer.input_shape
 
 	def setNext(self, next):
 		if self.next[0] == None:

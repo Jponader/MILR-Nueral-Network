@@ -22,16 +22,17 @@ def addLayerTesting():
 	model.summary()
 
 	milr = MILR(model)
+	return model
 
 
 def activationFucntion():
 	vector = tf.convert_to_tensor([[25,10,15,20,30]], dtype= np.float32)
 	print(vector)
-	result = M.activationLayer.forwardPass('linear', vector)
+	result = M.activationLayer.forwardPass(vector, 'linear')
 	print(result)
 
 def main():
-	activationFucntion()
+	model = addLayerTesting()
 
 if __name__ == '__main__':
     main()

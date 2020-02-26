@@ -1,4 +1,6 @@
-from MILR import Layers as L
+from tensorflow.python.ops import gen_math_ops
+from tensorflow.python.ops import math_ops
+
 
 from MILR.Layers.activationLayer import activationLayer
 from MILR.Layers.biasLayer import biasLayer
@@ -19,41 +21,28 @@ class denseLayer(layerNode):
 
 	def __init__(self, layer, prev = None, next = None):
 		super(denseLayer,self).__init__(layer, prev = prev, next = next)
-		config = layer.get_config()
-		self.units = config['units']
-		
+		#config = layer.get_config()
+		#self.units = config['units']
 		#Common
-		self.hasBias = config['use_bias']
-		self.activationFunc = config['activation']
+		#self.hasBias = config['use_bias']
+		#self.activationFunc = config['activation']
 
 
-	#Need to seperate out Bias
 	def layerInitilizer(self, inputData, status):
 		out = self.Tlayer.call(inputData)
-		#print(out.shape)
-		return out, status
+		out2 = self.forwardPass(inputData)
+
+		assert np.allclose(out, out2,  atol=1e-10), 'ERROR Different Dense Functions'
+		return out2, status
 
 
+	def forwardPass(self, inputs):
+		# This function is based off of Keras.Dense.Call()
+		layer = self.Tlayer
+		inputs = math_ops.cast(inputs, layer._compute_dtype)
+		outputs = gen_math_ops.mat_mul(inputs, layer.kernel)
 
-	def initalize(self, inputshape):
-		if len(inputshape) > 2:
-				print("Error: Input Mat not 2d")
+		if layer.use_bias:
+			outputs = biasLayer.forwardPass(outputs, layer.bias)
 
-		outputShape = (self.depth, inputshape[1])
-		self.weightShape = (self.depth, inputshape[0])
-		self.weights = np.random.rand(self.depth, inputshape[0])
-		return outputShape
-
-
-	def forwardPass(self, inputMat):
-		out = np.matmul(self.weights, inputMat)
-		out =  self.bias.forwardPass(out)
-		out = self.activationLayer.forwardPass(out)
-		return out
-
-	def backPropogation(self, gradient):
-		return 0
-
-
-	#def milrIntilization(self, inputMat, state):
-		#find padded output
+		return activationLayer.forwardPass(outputs, layer.activation)

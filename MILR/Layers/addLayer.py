@@ -12,7 +12,7 @@ class addLayer(layerNode):
 		self.inputData.append(inputData)
 
 		if self.canStartInilize():
-			print(self, self.outputSize)
+			print(self)
 
 			assert inputData is not None, ("ERROR : No input data for next round")
 
@@ -25,7 +25,7 @@ class addLayer(layerNode):
 				self.outputData = outputData
 
 	def canStartInilize(self):
-		if len(self.inputSize) == len(self.prev) and len(self.inputData) == len(self.prev):
+		if len(self.inputData) == len(self.prev):
 			return True
 		else:
 			return False
