@@ -30,7 +30,7 @@ class denseLayer(layerNode):
 	#Need to seperate out Bias
 	def layerInitilizer(self, inputData, status):
 		out = self.Tlayer.call(inputData)
-		print(out.shape)
+		#print(out.shape)
 		return out, status
 
 

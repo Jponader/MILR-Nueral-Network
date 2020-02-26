@@ -14,6 +14,5 @@ class zeroPaddingLayer(layerNode):
 
 	def layerInitilizer(self, inputData, status):
 		out = self.Tlayer.call(inputData)
-		print(out.shape)
 		return out, status
 	

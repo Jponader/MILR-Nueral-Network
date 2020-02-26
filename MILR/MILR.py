@@ -27,28 +27,21 @@ class MILR:
 		self.buildMILRModel()
 
 		for layer in self.milrModel:
-			if layer == None:
-				print("Error: We have a None")
+			assert layer != None, "Error: We have a None Layer"
 
+		#self.print(self.milrHead)
+		#self.reverseprint(self.milrModel[-1])
 		self.splitprint(self.milrHead)
 		self.initalize()
 
-#phase 1:
-	# walk through the model setting inputs, output pairs 
-
-			## DONE!!!
-#phase 2:
-	# passback meta-data
 	def initalize(self):
-		self.inputDim = tf.TensorShape(((None,)+ self.inputDim))
-		self.milrHead.initilize(self.inputDim)
+		self.milrHead.initilize()
 
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
-		#print(self.config)
 		self.milrHead = self.makeLayer(self.model.layers[0], None)
-		self.inputDim = self.milrHead.setAsInputLayer()
+		self.milrHead.setAsInputLayer()
 		self.milrModel[0] = self.milrHead
 		tail = self.makeLayer(self.model.layers[-1], None)
 		tail.isEnd()
@@ -150,6 +143,31 @@ class MILR:
 					print(head)
 					head = nexts[0]
 			else :
+				print(head)
+				break
+
+#Prints sinlge list with signalling of splits and unions in Reverse
+	def reverseprint(self, head):
+		while True:
+			if head.hasPrev():
+				nexts = head.getPrev()
+
+				if head.isSplit():
+					print("		Union")
+					return head
+
+				if head.isUnion():
+					print(head)
+					print("		SPLIT")
+					for n in nexts:
+						head = self.reverseprint(n)
+					print(head)
+					head = head.getPrev()[0]
+				else: 
+					print(head)
+					head = nexts[0]
+			else :
+				print(head)
 				break
 
 # Assumption only one split is going on at a time, a split is only two items

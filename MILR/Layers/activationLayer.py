@@ -1,7 +1,10 @@
+from tensorflow.python.keras import activations
+
 import math
 
 from MILR.Layers.layerNode import layerNode
 import MILR.status as STAT
+
 
 
 class activationLayer(layerNode):
@@ -12,7 +15,6 @@ class activationLayer(layerNode):
 
 	def layerInitilizer(self, inputData, status):
 		out = self.Tlayer.call(inputData)
-		print(out.shape)
 		return out, status
 
 
@@ -22,50 +24,12 @@ class activationLayer(layerNode):
 
 
 
-# if sublayer use the functions, but not have own object
+# Open fucntions to seperate activation fucntions from other layers
 
 
-	def forwardPass(self, inputMat):
-		return self.activation.forwardPass(inputMat)
-
-	def initalize(self, inputShape):
-		return	inputShape
-
-	class empty:
-
-		def forwardPass(inputMat):
-			return inputMat
-
-
-	class relu:
-		
-		def forwardPass(inputMat):
-			for i in range(0,len(inputMat)):
-
-				if inputMat[i] < 0:
-					inputMat[i]= 0
-
-			return inputMat
+	def forwardPass(func, data):
+		results = activations.get(getattr(activations,func))(data)
+		return results
 
 
 
-	class softmax:
-		
-		def forwardPass(inputMat):
-			esum = 0
-
-			for i in range(0,len(inputMat)):
-				esum += math.log1p(inputMat[i])
-
-			for i in range(0,len(inputMat)):
-				inputMat[i] = math.log1p(inputMat[i])/esum
-
-			return inputMat
-
-	class sigmoid:
-
-		def forwardPass(inputMat):
-			for i in range(0,len(inputMat)):
-				inputMat[i] = 1 / (1 + math.exp(-inputMat[i]))
-
-				return inputMat

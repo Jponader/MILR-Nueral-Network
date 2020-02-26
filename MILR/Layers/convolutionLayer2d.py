@@ -19,8 +19,7 @@ class convolutionLayer2d(layerNode):
 		config = layer.get_config()
 		self.stride = config['strides']
 		self.filters = config['filters']
-		self.kernel = config['kernel_size']
-
+		self.kernelSize = config['kernel_size']
 		#Common
 		self.hasBias = config['use_bias']
 		self.activationFunc = config['activation']

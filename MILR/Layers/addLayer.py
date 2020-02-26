@@ -5,35 +5,24 @@ class addLayer(layerNode):
 
 	def __init__ (self,layer, prev = None, next = None):
 		super(addLayer,self).__init__(layer, prev = prev, next = next)
-		self.forwardInputs = []
 		self.inputData = []
 
-
-	def initilize(self, inputSize, status = STAT.START, inputData = None):
-		self.inputSize.append(inputSize)
+	def initilize(self,status = STAT.START, inputData = None):
+		assert status != STAT.START, "ERROR: Add Layer Cannpt be a Start Layer"
 		self.inputData.append(inputData)
+
 		if self.canStartInilize():
-			self.outputSize = self.Tlayer.compute_output_shape(self.inputSize)
 			print(self, self.outputSize)
 
-			if status == STAT.START:
-				if self.inputLayer:
-					inputData = self.startMetadata()
-					status = STAT.NO_INV
-				else:
-					print("ERROR :Not Start Layer")
-					sys.exit()
-
-			if inputData is None:
-				print("ERROR : No input data for next round")
-				sys.exit()
+			assert inputData is not None, ("ERROR : No input data for next round")
 
 			outputData, status = self.layerInitilizer(self.inputData, status)
-
 			if not self.end:
 				for n in self.next:
-					n.initilize(self.outputSize, status, inputData = outputData)
-
+					n.initilize(status, inputData = outputData)
+			else:
+				#this might vary based on status and layer to be adjusted
+				self.outputData = outputData
 
 	def canStartInilize(self):
 		if len(self.inputSize) == len(self.prev) and len(self.inputData) == len(self.prev):
@@ -43,9 +32,7 @@ class addLayer(layerNode):
 
 
 	def layerInitilizer(self, inputData, status):
-		self.forwardInputs.append(inputData)
 		out = self.Tlayer.call(inputData)
-		print(out.shape)
 		return out, status
 
 

@@ -19,63 +19,45 @@ class layerNode:
 		#print(layer.name)
 		self.name = layer.name
 		self.inputLayer = False
-		self.inputSize = []
-		self.outputSize = None
+		self.inputSize = self.Tlayer.input_shape
+		self.outputSize = self.Tlayer.output_shape
 
 
 	def __str__(self):
 		return self.name 
 		#+ " Next " + str(len(self.next)) + " Prev " + str(len(self.prev))
 
-	def initilize(self, inputSize, status = STAT.START, inputData = None):
-		self.inputSize.append(inputSize)
-		if self.canStartInilize():
-			if len(self.inputSize) > 1:
-				self.outputSize = self.Tlayer.compute_output_shape(self.inputSize)
-			else:
-				self.outputSize = self.Tlayer.compute_output_shape(self.inputSize[0])
-			print(self, self.outputSize)
+	def initilize(self,status = STAT.START, inputData = None):
+		if status == STAT.START:
+			assert self.inputLayer, ("ERROR :Not Start Layer")
+			inputData = self.startMetadata()
+			status = STAT.NO_INV
 
-			if status == STAT.START:
-				if self.inputLayer:
-					inputData = self.startMetadata()
-					status = STAT.NO_INV
-				else:
-					print("ERROR :Not Start Layer")
-					sys.exit()
+		print(self, self.outputSize, self.outputSize)
 
-			if inputData is None:
-				print("ERROR : No input data for next round")
-				sys.exit()
+		assert inputData is not None, ("ERROR : No input data for next round")
 
-			outputData, status = self.layerInitilizer(inputData, status)
-
-			if not self.end:
-				for n in self.next:
-					n.initilize(self.outputSize, status, inputData = outputData)
+		outputData, status = self.layerInitilizer(inputData, status)
+		if not self.end:
+			for n in self.next:
+				n.initilize(status, inputData = outputData)
+		else:
+			#this might vary based on status and layer to be adjusted
+			self.outputData = outputData
 
 	# Assumption of Passthrough Layers will have same input as oputput
 	def layerInitilizer(self, inputData, status):
 		return inputData, status
 
-	def canStartInilize(self):
-		if len(self.inputSize) == len(self.prev):
-			return True
-		else:
-			return False
-
 	def startMetadata(self):
 		self.checkpoint = True
-		self.status = STAT.START
 		seed()
 		self.seed = randint(0,10000)
-		print(self.inputSize[0].as_list()[1:])
-		return tf.convert_to_tensor(np.random.rand(1,*self.inputSize[0].as_list()[1:]),  dtype= self.dtype)
+		return tf.convert_to_tensor(np.random.rand(1,*self.inputSize[0][1:]),  dtype= self.dtype)
 
 	def setAsInputLayer(self):
 		self.inputLayer = True
 		self.dtype = self.Tlayer.get_config()['dtype']
-		return self.Tlayer.get_config()['batch_input_shape'][1:]
 
 	def setNext(self, next):
 		if self.next[0] == None:
@@ -91,6 +73,9 @@ class layerNode:
 
 	def hasNext(self):
 		return not (self.end) and self.next[0] != None
+
+	def hasPrev(self):
+		return not (self.inputLayer) and self.prev[0] != None
 
 	def isEnd(self):
 		self.end = True
