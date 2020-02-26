@@ -1,5 +1,5 @@
 from MILR.Layers.layerNode import layerNode
-import MILR.status as STAT
+from MILR.status import status as STAT
 
 class batchNormalization(layerNode):
 
@@ -12,4 +12,4 @@ class batchNormalization(layerNode):
 
 	def layerInitilizer(self, inputData, status):
 		out = self.Tlayer.call(inputData)
-		return out, status
+		return out, STAT.REQ_INV

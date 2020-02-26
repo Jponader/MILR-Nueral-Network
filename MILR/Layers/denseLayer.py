@@ -3,10 +3,9 @@ from tensorflow.python.ops import math_ops
 
 
 from MILR.Layers.activationLayer import activationLayer
-from MILR.Layers.biasLayer import biasLayer
+from MILR.Layers.biasLayer import forwardPass as biasLayer
 from MILR.Layers.layerNode import layerNode
-import MILR.status as STAT
-
+from MILR.status import status as STAT
 
 import math
 import numpy as np
@@ -15,7 +14,6 @@ from random import randint
 from random import random
 from datetime import datetime
 from itertools import zip_longest
-
 
 class denseLayer(layerNode):
 
@@ -29,20 +27,25 @@ class denseLayer(layerNode):
 
 
 	def layerInitilizer(self, inputData, status):
-		out = self.Tlayer.call(inputData)
-		out2 = self.forwardPass(inputData)
+		return self.forwardPass(inputData, status)
 
-		assert np.allclose(out, out2,  atol=1e-10), 'ERROR Different Dense Functions'
-		return out2, status
-
-
-	def forwardPass(self, inputs):
+	def forwardPass(self, inputs, status):
 		# This function is based off of Keras.Dense.Call()
 		layer = self.Tlayer
 		inputs = math_ops.cast(inputs, layer._compute_dtype)
 		outputs = gen_math_ops.mat_mul(inputs, layer.kernel)
 
-		if layer.use_bias:
-			outputs = biasLayer.forwardPass(outputs, layer.bias)
+		status = self.metadataHarvester(status)
 
-		return activationLayer.forwardPass(outputs, layer.activation)
+		if layer.use_bias:
+			outputs, status = biasLayer(outputs, layer.bias, status)
+
+		return activationLayer.forwardPass(outputs, layer.activation, status)
+
+	#To be updated		
+	def metadataHarvester(self, status):
+		if status == STAT.NO_INV:
+			return STAT.REQ_INV
+	
+		print("			Possible Checkpoint")
+		return STAT.REQ_INV

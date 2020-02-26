@@ -3,9 +3,7 @@ from tensorflow.python.keras import activations
 import math
 
 from MILR.Layers.layerNode import layerNode
-import MILR.status as STAT
-
-
+from MILR.status import status as STAT
 
 class activationLayer(layerNode):
 
@@ -17,17 +15,12 @@ class activationLayer(layerNode):
 		out = self.Tlayer.call(inputData)
 		return out, status
 
-
-
-
-
-
-
-
 # Open fucntions to seperate activation fucntions from other layers
+	@staticmethod
+	def metadataHarvester(status):
+		#this needs to be updated to accoutn for all the possible activations functions and handle each type differently
+		return status
 
-
-	def forwardPass(data, func):
-		return activations.get(func)(data)
-
-
+	@staticmethod
+	def forwardPass(data, func, status):
+		return activations.get(func)(data), activationLayer.metadataHarvester(status)

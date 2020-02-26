@@ -10,7 +10,7 @@ from tensorflow.keras import layers as L
 
 # Handles the MILR Layers Classes
 import MILR.Layers as M
-import MILR.status as STAT
+from MILR.status import status as STAT
 from tensorflow.python.keras.layers.normalization import BatchNormalization
 
 class MILR:
@@ -37,7 +37,6 @@ class MILR:
 
 	def initalize(self):
 		self.milrHead.initilize()
-
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
@@ -103,11 +102,11 @@ class MILR:
 		elif t == L.ZeroPadding2D:
 			return M.zeroPaddingLayer(layers,next = next)
 
-		elif t == L.MaxPooling2D:
-			return M.poolingLayer2d(layers,next = next)
-
-		elif t == L.GlobalAveragePooling2D:
-			return M.globalPoolingLayer(layers,next = next)
+		# Non Invertible
+		# No Weights
+		# Checkpoint when encountered
+		elif t == L.MaxPooling2D or t == L.GlobalAveragePooling2D:
+			return M.NonInv_Check(layers,next = next)
 
 		elif t == L.Flatten:
 			return M.flattenLayer(layers, next = next)

@@ -6,11 +6,9 @@ from random import random
 from datetime import datetime
 
 from MILR.Layers.activationLayer import activationLayer
-from MILR.Layers.biasLayer import biasLayer
+from MILR.Layers.biasLayer import forwardPass as biasLayer
 from MILR.Layers.layerNode import layerNode
-import MILR.status as STAT
-
-
+from MILR.status import status as STAT
 
 class convolutionLayer2d(layerNode):
 
@@ -29,28 +27,28 @@ class convolutionLayer2d(layerNode):
 		#self.activationFunc = config['activation']
 		
 
-
-
-	#Need to seperate out Bias
 	def layerInitilizer(self, inputData, status):
-		out = self.Tlayer.call(inputData)
-		out2 = self.forwardPass(inputData)
+		return self.forwardPass(inputData, status)
 
-		assert np.allclose(out, out2,  atol=1e-10), 'ERROR Different Dense Functions'
-		return out2, status
-
-
-	def forwardPass(self, inputs):
+	def forwardPass(self, inputs, status):
 	# This function is based off of Keras.Convolution2D.Call()
 		layer = self.Tlayer
 		outputs = layer._convolution_op(inputs, layer.kernel)
 
+		status = self.metadataHarvester(status)
+
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
-				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NCHW')
+				outputs, status = biasLayer(outputs, layer.bias, status, data_format='NCHW')
 			else:
-				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NHWC')
+				outputs, status = biasLayer(outputs, layer.bias, status, data_format='NHWC')
 
-		return activationLayer.forwardPass(outputs, layer.activation)
+		return activationLayer.forwardPass(outputs, layer.activation, status)
 
-			
+	#To be updated		
+	def metadataHarvester(self, status):
+		if status == STAT.NO_INV:
+			return STAT.REQ_INV
+	
+		print("			Possible Checkpoint")
+		return STAT.REQ_INV

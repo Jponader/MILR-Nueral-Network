@@ -1,11 +1,12 @@
-# Start, first layer
-START = -1
+from enum import Enum
 
-# NO Invertibaility requirment
-NO_INV = 0
-	
-# Needs to be Invertible
-REQ_INV = 1
 
-# Union, pause till both paths merge
-UNION = 2
+class status(Enum):
+	# Start, first layer
+	START = -1
+
+	# NO Invertibaility requirment
+	NO_INV = 0
+		
+	# Needs to be Invertible
+	REQ_INV = 1
