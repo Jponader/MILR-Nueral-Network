@@ -47,6 +47,11 @@ class layerNode:
 	def layerInitilizer(self, inputData, status):
 		return self.Tlayer.call(inputData), status
 
+	def checkpoint(self, inputs):
+		self.checkpointed = True
+		#store the checkpoint
+		pass
+
 	def startMetadata(self):
 		self.checkpoint = True
 		seed()

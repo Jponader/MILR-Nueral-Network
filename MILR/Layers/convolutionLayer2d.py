@@ -31,7 +31,6 @@ class convolutionLayer2d(layerNode):
 		return self.forwardPass(inputData, status)
 
 	def forwardPass(self, inputs, status):
-	# This function is based off of Keras.Convolution2D.Call()
 		layer = self.Tlayer
 		outputs = layer._convolution_op(inputs, layer.kernel)
 
