@@ -6,7 +6,8 @@ from random import random
 from datetime import datetime
 
 from MILR.Layers.activationLayer import activationLayer
-from MILR.Layers.biasLayer import forwardPass as biasLayer
+from MILR.Layers.biasLayer import forwardPass as biasLayerForward
+from MILR.Layers.biasLayer import staticInitilizer as biasLayerInit
 from MILR.Layers.layerNode import layerNode
 from MILR.status import status as STAT
 
@@ -28,21 +29,19 @@ class convolutionLayer2d(layerNode):
 		
 
 	def layerInitilizer(self, inputData, status):
-		return self.forwardPass(inputData, status)
+		return self.forwardPass(inputData), self.metadataHarvester(status)
 
-	def forwardPass(self, inputs, status):
+	def forwardPass(self, inputs):
 		layer = self.Tlayer
 		outputs = layer._convolution_op(inputs, layer.kernel)
 
-		status = self.metadataHarvester(status)
-
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
-				outputs, status = biasLayer(outputs, layer.bias, status, data_format='NCHW')
+				outputs = biasLayerForward(outputs, layer.bias, data_format='NCHW')
 			else:
-				outputs, status = biasLayer(outputs, layer.bias, status, data_format='NHWC')
+				outputs= biasLayerForward(outputs, layer.bias, data_format='NHWC')
 
-		return activationLayer.forwardPass(outputs, layer.activation, status)
+		return activationLayer.forwardPass(outputs, layer.activation)
 
 	#To be updated		
 	def metadataHarvester(self, status):

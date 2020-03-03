@@ -6,7 +6,8 @@ from tensorflow import linalg
 
 
 from MILR.Layers.activationLayer import activationLayer
-from MILR.Layers.biasLayer import forwardPass as biasLayer
+from MILR.Layers.biasLayer import forwardPass as biasLayerForward
+from MILR.Layers.biasLayer import staticInitilizer as biasLayerInit
 from MILR.Layers.layerNode import layerNode
 from MILR.status import status as STAT
 
@@ -29,13 +30,13 @@ class denseLayer(layerNode):
 		#self.hasBias = config['use_bias']
 		#self.activationFunc = config['activation']
 
-	def forwardPass(self, inputs, status):
+	def forwardPass(self, inputs):
 		inputs = math_ops.cast(inputs, self.Tlayer._compute_dtype)
 		outputs = gen_math_ops.mat_mul(inputs, self.Tlayer.kernel)
 		if layer.use_bias:
-			outputs, status = biasLayer(outputs, layer.bias, status)
+			outputs = biasLayerForward(outputs, layer.bias)
 
-		return activationLayer.forwardPass(outputs, layer.activation, status)
+		return activationLayer.forwardPass(outputs, layer.activation)
 
 	def layerInitilizer(self, inputData, status):
 		inputData = math_ops.cast(inputData, self.Tlayer._compute_dtype)
@@ -93,9 +94,9 @@ class denseLayer(layerNode):
 				self.store = (mOut, gen_math_ops.mat_mul(inputData, pIn), gen_math_ops.mat_mul(mIn, pIn))
 
 		if layer.use_bias:
-			outputs, status = biasLayer(outputs, layer.bias, status)
+			outputs, status = biasLayerInit(outputs, layer.bias, status)
 
-		return activationLayer.forwardPass(outputs, layer.activation, status)
+		return activationLayer.staticInitilizer(outputs, layer.activation, status)
 
 
 	def densePadding(self, m,n,p):

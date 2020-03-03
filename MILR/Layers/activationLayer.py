@@ -21,10 +21,13 @@ class activationLayer(layerNode):
 		return status
 
 	@staticmethod
-	def forwardPass(data, func, status):
+	def forwardPass(data, func):
 		#return activations.get(func)(data), activationLayer.metadataHarvester(status)
-		return data, status
+		return data
 
+	@staticmethod
+	def staticInitilizer(inputData, func, status):
+		return inputData, status
 # If one treats all of the activation layers on passthrough functions, 
 # they become invertible and the realtionsip between input and output for others layer is maintained
 # as there are no weight and the shap does not change we can theroretically ignore this layer entirely
