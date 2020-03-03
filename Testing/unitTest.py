@@ -31,8 +31,20 @@ def activationFucntion():
 	result = M.activationLayer.forwardPass(vector, 'linear')
 	print(result)
 
+
+def concatPractice():
+	inputs = tf.convert_to_tensor(np.random.rand(2,3))
+	out = tf.convert_to_tensor(np.random.rand(2,3))
+
+	print(inputs)
+	print()
+	print(out)
+	print(0)
+
+	print(tf.concat([inputs,out], 1))
+
 def main():
-	model = addLayerTesting()
+	model = concatPractice()
 
 if __name__ == '__main__':
     main()

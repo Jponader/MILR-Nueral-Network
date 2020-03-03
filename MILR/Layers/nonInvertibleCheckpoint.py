@@ -19,5 +19,7 @@ class nonInvertibleCheckpoint(layerNode):
 
 	def metadataHarvester(self, status):
 		if status == STAT.REQ_INV:
-			print("			Checkpoint")
+			self.checkpoint(inputData)
+		else:
+			self.checkpointed = False
 		return STAT.NO_INV

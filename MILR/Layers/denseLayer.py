@@ -1,5 +1,8 @@
+import tensorflow as tf
 from tensorflow.python.ops import gen_math_ops
 from tensorflow.python.ops import math_ops
+from tensorflow import linalg
+
 
 
 from MILR.Layers.activationLayer import activationLayer
@@ -26,25 +29,25 @@ class denseLayer(layerNode):
 		#self.hasBias = config['use_bias']
 		#self.activationFunc = config['activation']
 
+	def forwardPass(self, inputs, status):
+		inputs = math_ops.cast(inputs, self.Tlayer._compute_dtype)
+		outputs = gen_math_ops.mat_mul(inputs, self.Tlayer.kernel)
+		if layer.use_bias:
+			outputs, status = biasLayer(outputs, layer.bias, status)
+
+		return activationLayer.forwardPass(outputs, layer.activation, status)
 
 	def layerInitilizer(self, inputData, status):
-		return self.forwardPass(inputData, status)
-
-	def forwardPass(self, inputs, status):
-		self.rawIn = inputs
-		outputs = math_ops.cast(inputs, layer._compute_dtype)
-		outputs = gen_math_ops.mat_mul(inputs, layer.kernel)
-		self.rawOut = outputs
-		self.rawKernel =self.Tlayer.kernel
-
+		inputData = math_ops.cast(inputData, self.Tlayer._compute_dtype)
+		outputs = gen_math_ops.mat_mul(inputData, self.Tlayer.kernel)
 
 		layer = self.Tlayer
-		assert len(inputs.shape) == 2, "Error: Dense Input Not 2D"
+		assert len(inputData.shape) == 2, "Error: Dense Input Not 2D"
 		assert len(layer.kernel.shape) == 2, "Error: Dense Kernel Not 2D"
 
-		m = inputs.shape[0]
-		n = inputs.shape[1]
-		p = layer.kernel.shape[0]
+		m = inputData.shape[0]
+		n = inputData.shape[1]
+		p = layer.kernel.shape[1]
 		mPad, pPad = self.densePadding(m,n,p)
 
 		MP = m * p
@@ -52,20 +55,14 @@ class denseLayer(layerNode):
 		weightCost = mPad * p - MP
 		inputCost = mPad*pPad - MP
 		checkpointCost = m * n
-		
-
-		print("outputSize", MP)
-		print("weightCost", weightCost)
-		print("inputCost", inputCost)
-		print("checkpointCost", checkpointCost)
-		print("plainWeights", NP)
 
 		if status == STAT.NO_INV:
 			self.padded = DN.NONE
 			status =  STAT.REQ_INV
+			pPad = p
 		else:
-			if checkpointCost < inputCost:
-				self.checkpoint(inputs)
+			if (checkpointCost + weightCost) < inputCost:
+				self.checkpoint(inputData)
 				self.padded = DN.NONE
 				pPad = p
 			else:
@@ -79,39 +76,21 @@ class denseLayer(layerNode):
 				self.padded = DN.STORED
 				mPad = m
 
-		if mPad != m or pPad != p:
-			inputs = self.padder(inputs, mPad, pPad)
+		if mPad != m:
+			mIn = self.seededRandomTensor((mPad-m,n))
+		if pPad != p:
+			pIn = self.seededRandomTensor((n, pPad - p))
 		
-		outputs = math_ops.cast(inputs, layer._compute_dtype)
-		outputs = gen_math_ops.mat_mul(inputs, layer.kernel)
-
-
-		if self.padded == DN.INPUTPAD:
+		if self.padded == DN.NONE:
 			self.store = None
-			outputs = outputs
-		elif self.padded == DN.WEIGHTPAD:
-			self.store = None
-			outputs = outputs
 		elif self.padded == DN.STORED:
 			self.store = layer.kernel
 		else:
-			self.store = None
-
-		"""
-		if status == STAT.NO_INV:
-			status =  STAT.REQ_INV
-		else :
-			print("			Possible Checkpoint")
-			invert = self.invertibility()
-			checkpoint = inputs.size
-			if checkpoint <= invert:
-				#self.checkpoint(inputs)
-				status = STAT.NO_INV
-			else: 
-				status= STAT.REQ_INV
-				#modify code for gettting metadata
-"""
-
+			mOut = gen_math_ops.mat_mul(mIn, self.Tlayer.kernel)
+			if self.padded == DN.WEIGHTPAD:
+				self.store = (mOut)
+			else:
+				self.store = (mOut, gen_math_ops.mat_mul(inputData, pIn), gen_math_ops.mat_mul(mIn, pIn))
 
 		if layer.use_bias:
 			outputs, status = biasLayer(outputs, layer.bias, status)
@@ -130,16 +109,13 @@ class denseLayer(layerNode):
 			pPad = p
 		return mPad, pPad
 
-	def padder(self,input, mPad, pPad, status):
+	def seededRandomTensor(self, shape):
+		np.random.seed(self.seeder())
+		return tf.convert_to_tensor(np.random.rand(*shape),  dtype= self.Tlayer.dtype)
 
-		if self.padded == DN.INPUTPAD:
-			#both pad
-			pass
-		elif self.padded == DN.WEIGHTPAD:
-			#padd weights
-			pass
-
-
+	def padder2D(self,inputs, x, y, axis):
+		out = self.seededRandomTensor((x,y))
+		return tf.concat([inputs,out], axis)
 
 
 class DN(Enum):
@@ -152,4 +128,4 @@ class DN(Enum):
 	WEIGHTPAD = 1
 
 	# Stored Plain Weights
-	DN.STORED = 2
+	STORED = 2

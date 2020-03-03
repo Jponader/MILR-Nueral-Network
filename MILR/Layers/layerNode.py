@@ -15,6 +15,7 @@ class layerNode:
 		self.end = end
 		self.Tlayer = layer
 		self.inputLayer = False
+		self.seed = None
 
 		#These may be remoavable
 		self.name = layer.name
@@ -49,13 +50,17 @@ class layerNode:
 
 	def checkpoint(self, inputs):
 		self.checkpointed = True
-		#store the checkpoint
-		pass
+		self.checkpoint = inputs
+
+	def seeder(self):
+		if self.seed == None:
+			seed()
+			self.seed = randint(0,10000)
+		return self.seed
 
 	def startMetadata(self):
 		self.checkpoint = True
-		seed()
-		self.seed = randint(0,10000)
+		np.random.seed(self.seeder())
 		return tf.convert_to_tensor(np.random.rand(1,*self.inputSize[0][1:]),  dtype= self.dtype)
 
 	def setAsInputLayer(self):
