@@ -14,7 +14,7 @@ from tensorflow import linalg
 import numpy as np
 
 def defualtModel():
-	model= keras.models.load_model('FashionMNIST/model.h5')
+	model= keras.models.load_model('CNN_MNIST/model.h5')
 	model.summary()
 	milr = MILR(model)
 	return milr
@@ -81,9 +81,19 @@ def padder2D():
 	print(out)
 	print(tf.concat([hold,out], 1))
 
+def padding4D():
+	start = tf.convert_to_tensor(np.random.rand(1,28,28,5))
+	print(start.shape)
+	pad1 =  tf.convert_to_tensor(np.random.rand(1,2,28,5))
+	print(pad1.shape)
+	paddedInput = tf.concat([start,pad1], 1)
+	pad2 =  tf.convert_to_tensor(np.random.rand(1,30,2,5))
+	print(pad2.shape)
+	paddedInput = tf.concat([paddedInput,pad2], 2)
+	print(paddedInput.shape)
+
 def main():
-	weightSolver()
-	#matrixMath()
+	padding4D()
 
 if __name__ == '__main__':
     main()
