@@ -7,9 +7,17 @@ import MILR.status as STAT
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers as L
+from tensorflow.python.ops import gen_math_ops
+from tensorflow.python.ops import math_ops
+from tensorflow import linalg
 
 import numpy as np
 
+def defualtModel():
+	model= keras.models.load_model('FashionMNIST/model.h5')
+	model.summary()
+	milr = MILR(model)
+	return milr
 
 def addLayerTesting():
 	inputs = keras.Input(shape=(4,4))
@@ -22,7 +30,7 @@ def addLayerTesting():
 	model.summary()
 
 	milr = MILR(model)
-	return model
+	return milr
 
 
 def activationFucntion():
@@ -43,8 +51,39 @@ def concatPractice():
 
 	print(tf.concat([inputs,out], 1))
 
+def weightSolver():
+	model = defualtModel()
+	layer = model.milrModel[3]
+	print(type(layer))
+
+	sol = layer.kernelSolver(layer.rawIn, layer.rawOut)
+
+	print(sol)
+	print(layer.rawKernel[:])
+
+	assert np.allclose(sol[:], layer.rawKernel[:],  atol=1e-08), "weights wrong"
+
+def matrixMath():
+	inMat = tf.convert_to_tensor(np.random.rand(784,784),  dtype= 'float64')
+	weights = tf.convert_to_tensor(np.random.rand(784,128), dtype= 'float64')
+	out =  gen_math_ops.mat_mul(inMat, weights)
+	print(out.shape)
+
+	solved = linalg.lstsq(inMat, out, fast=False)
+	print(solved.shape)
+
+	assert np.allclose(weights, solved,  atol=1e-08), "weights wrong"
+
+def padder2D():
+	hold = tf.convert_to_tensor(np.random.rand(1,2))
+	print(hold)
+	out = tf.convert_to_tensor(np.random.rand(1,0))
+	print(out)
+	print(tf.concat([hold,out], 1))
+
 def main():
-	model = concatPractice()
+	weightSolver()
+	#matrixMath()
 
 if __name__ == '__main__':
     main()

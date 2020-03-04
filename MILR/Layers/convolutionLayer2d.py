@@ -6,8 +6,7 @@ from random import random
 from datetime import datetime
 
 from MILR.Layers.activationLayer import activationLayer
-from MILR.Layers.biasLayer import forwardPass as biasLayerForward
-from MILR.Layers.biasLayer import staticInitilizer as biasLayerInit
+from MILR.Layers import biasLayer
 from MILR.Layers.layerNode import layerNode
 from MILR.status import status as STAT
 
@@ -37,9 +36,9 @@ class convolutionLayer2d(layerNode):
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
-				outputs = biasLayerForward(outputs, layer.bias, data_format='NCHW')
+				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NCHW')
 			else:
-				outputs= biasLayerForward(outputs, layer.bias, data_format='NHWC')
+				outputs= biasLayer.forwardPass(outputs, layer.bias, data_format='NHWC')
 
 		return activationLayer.forwardPass(outputs, layer.activation)
 

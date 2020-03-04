@@ -10,6 +10,11 @@ def forwardPass(data, bias, data_format = None):
 	return nn.bias_add(data, bias, data_format)
 
 
-def staticInitilizer (data, bias, status, data_format = None):
+def layerInitilizer (data, bias, status, data_format = None):
 	return nn.bias_add(data, bias, data_format), STAT.REQ_INV
 	
+def kernelSolver(inputs, outputs):
+	pass
+
+def backwardPass(outputs):
+	pass

@@ -15,6 +15,7 @@ class layerNode:
 		self.end = end
 		self.Tlayer = layer
 		self.inputLayer = False
+		self.checkpointed = False
 		self.seed = None
 
 		#These may be remoavable
@@ -57,6 +58,14 @@ class layerNode:
 			seed()
 			self.seed = randint(0,10000)
 		return self.seed
+
+	def seededRandomTensor(self, shape):
+		np.random.seed(self.seeder())
+		return tf.convert_to_tensor(np.random.rand(*shape),  dtype= self.Tlayer.dtype)
+
+	def padder2D(self,inputs, x, y, axis):
+		out = self.seededRandomTensor((x,y))
+		return tf.concat([inputs,out], axis)
 
 	def startMetadata(self):
 		self.checkpoint = True

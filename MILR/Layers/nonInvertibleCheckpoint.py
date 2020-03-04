@@ -15,11 +15,8 @@ class nonInvertibleCheckpoint(layerNode):
 	# Checkpoint when encountered
 
 	def layerInitilizer(self, inputData, status):
-		return self.Tlayer.call(inputData), self.metadataHarvester(status, inputData)
-
-	def metadataHarvester(self, status, inputData):
 		if status == STAT.REQ_INV:
 			self.checkpoint(inputData)
-		else:
-			self.checkpointed = False
-		return STAT.NO_INV
+		return self.Tlayer.call(inputData), STAT.NO_INV
+
+		
