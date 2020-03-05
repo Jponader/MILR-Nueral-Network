@@ -38,8 +38,7 @@ class convolutionLayer2d(layerNode):
 
 		layer = self.Tlayer
 
-		print(inputData.shape)
-		print(layer.kernel.shape)
+		print('	Weights: ',layer.kernel.shape)
 		assert len(inputData.shape) == 4, "Error: Dense Input Not 3D"
 		assert len(layer.kernel.shape) == 4, "Error: Dense Kernel Not 3D"
 
@@ -73,13 +72,14 @@ class convolutionLayer2d(layerNode):
 					else:
 						self.padded = CN.INPUTPAD	
 
-		weightCost = nPad**2 - (N*N)
-		print("npad", nPad)
-		print("N", N)
-		print("weightCost",weightCost)
-		print("inputCost", inputCost)
-		print(self.checkpointed)
-		print(self.padded)
+		weightCost = (nPad**2 - (N*N))*Z
+		#print("npad", nPad)
+		#print("N", N)
+		#print("weightCost",weightCost)
+		#print("inputCost", inputCost)
+		#print(self.checkpointed)
+		print('	',self.padded)
+
 
 		if self.padded == CN.BOTH or self.padded == CN.WEIGHTPAD:
 			inputSize = ((nPad -1)*layer.strides[0]) + F
@@ -89,15 +89,13 @@ class convolutionLayer2d(layerNode):
 			paddedInput = tf.concat([inputData,pad1], 1)
 			pad2 =  tf.convert_to_tensor(np.random.rand(1,M+mPad,mPad,Z),  dtype= self.Tlayer.dtype)
 			paddedInput = tf.concat([paddedInput,pad2], 2)
-			print("weightpad",paddedInput.shape)
 			paddedOut = tf.nn.conv2d(paddedInput, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
-			print(paddedOut.shape)
+			print("	weightCost",weightCost)
 
 		if self.padded == CN.BOTH or self.padded == CN.INPUTPAD:
 			extraFilters = self.seededRandomTensor((F,F,Z,yPad))
-			print(extraFilters.shape)
 			extraFiltered = tf.nn.conv2d(inputData, extraFilters, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
-			print(extraFiltered.shape)
+			print("	inputCost", inputCost)
 		
 		outputs = tf.nn.conv2d(inputData, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
 

@@ -31,11 +31,12 @@ class layerNode:
 			inputData = self.startMetadata()
 			status = STAT.NO_INV
 
-		print(self,"	", status)
+		print("\n\n",self,"	", status, self.Tlayer.input_shape, self.Tlayer.output_shape)
 
 		assert inputData is not None, ("ERROR : No input data for next round")
 
 		outputData, status = self.layerInitilizer(inputData, status)
+		print('	Checkpointed: ', self.checkpointed)
 		if not self.end:
 			for n in self.next:
 				n.initilize(status, inputData = outputData)
@@ -52,6 +53,10 @@ class layerNode:
 	def checkpoint(self, inputs):
 		self.checkpointed = True
 		self.checkpoint = inputs
+		cost = 1
+		for i in inputs.shape:
+			cost = cost*i
+		print('	checkpoint: ',inputs.shape, cost)
 
 	def seeder(self):
 		if self.seed == None:

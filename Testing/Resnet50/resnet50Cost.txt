@@ -1,0 +1,833 @@
+ input_1 	 status.NO_INV [(None, 224, 224, 3)] [(None, 224, 224, 3)]
+	Checkpointed:  False
+
+
+ conv1_pad 	 status.NO_INV (None, 224, 224, 3) (None, 230, 230, 3)
+	Checkpointed:  False
+
+
+ conv1 	 status.NO_INV (None, 230, 230, 3) (None, 112, 112, 64)
+	Weights:  (7, 7, 3, 64)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn_conv1 	 status.REQ_INV (None, 112, 112, 64) (None, 112, 112, 64)
+	Checkpointed:  False
+
+
+ activation_1 	 status.REQ_INV (None, 112, 112, 64) (None, 112, 112, 64)
+	Checkpointed:  False
+
+
+ pool1_pad 	 status.REQ_INV (None, 112, 112, 64) (None, 114, 114, 64)
+	Checkpointed:  False
+
+
+ max_pooling2d_1 	 status.REQ_INV (None, 114, 114, 64) (None, 56, 56, 64)
+	checkpoint:  (1, 114, 114, 64) 831744
+	Checkpointed:  True
+
+
+ res2a_branch2a 	 status.NO_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Weights:  (1, 1, 64, 64)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn2a_branch2a 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ activation_2 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ res2a_branch2b 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Weights:  (3, 3, 64, 64)
+	checkpoint:  (1, 56, 56, 64) 200704
+	 CN.NONE
+	Checkpointed:  True
+
+
+ bn2a_branch2b 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ activation_3 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ res2a_branch2c 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 256)
+	Weights:  (1, 1, 64, 256)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn2a_branch2c 	 status.REQ_INV (None, 56, 56, 256) (None, 56, 56, 256)
+	Checkpointed:  False
+
+
+ res2a_branch1 	 status.NO_INV (None, 56, 56, 64) (None, 56, 56, 256)
+	Weights:  (1, 1, 64, 256)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn2a_branch1 	 status.REQ_INV (None, 56, 56, 256) (None, 56, 56, 256)
+	Checkpointed:  False
+add_1 	 status.REQ_INV [(None, 56, 56, 256), (None, 56, 56, 256)] (None, 56, 56, 256)
+
+
+ activation_4 	 status.REQ_INV (None, 56, 56, 256) (None, 56, 56, 256)
+	Checkpointed:  False
+
+
+ res2b_branch2a 	 status.REQ_INV (None, 56, 56, 256) (None, 56, 56, 64)
+	Weights:  (1, 1, 256, 64)
+	 CN.INPUTPAD
+	inputCost 602112
+	Checkpointed:  False
+
+
+ bn2b_branch2a 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ activation_5 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ res2b_branch2b 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Weights:  (3, 3, 64, 64)
+	checkpoint:  (1, 56, 56, 64) 200704
+	 CN.NONE
+	Checkpointed:  True
+
+
+ bn2b_branch2b 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ activation_6 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ res2b_branch2c 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 256)
+	Weights:  (1, 1, 64, 256)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn2b_branch2c 	 status.REQ_INV (None, 56, 56, 256) (None, 56, 56, 256)
+	Checkpointed:  False
+add_2 	 status.REQ_INV [(None, 56, 56, 256), (None, 56, 56, 256)] (None, 56, 56, 256)
+
+
+ activation_7 	 status.REQ_INV (None, 56, 56, 256) (None, 56, 56, 256)
+	Checkpointed:  False
+
+
+ res2c_branch2a 	 status.REQ_INV (None, 56, 56, 256) (None, 56, 56, 64)
+	Weights:  (1, 1, 256, 64)
+	 CN.INPUTPAD
+	inputCost 602112
+	Checkpointed:  False
+
+
+ bn2c_branch2a 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ activation_8 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ res2c_branch2b 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Weights:  (3, 3, 64, 64)
+	checkpoint:  (1, 56, 56, 64) 200704
+	 CN.NONE
+	Checkpointed:  True
+
+
+ bn2c_branch2b 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ activation_9 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 64)
+	Checkpointed:  False
+
+
+ res2c_branch2c 	 status.REQ_INV (None, 56, 56, 64) (None, 56, 56, 256)
+	Weights:  (1, 1, 64, 256)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn2c_branch2c 	 status.REQ_INV (None, 56, 56, 256) (None, 56, 56, 256)
+	Checkpointed:  False
+add_3 	 status.REQ_INV [(None, 56, 56, 256), (None, 56, 56, 256)] (None, 56, 56, 256)
+
+
+ activation_10 	 status.REQ_INV (None, 56, 56, 256) (None, 56, 56, 256)
+	Checkpointed:  False
+
+
+ res3a_branch2a 	 status.REQ_INV (None, 56, 56, 256) (None, 28, 28, 128)
+	Weights:  (1, 1, 256, 128)
+	 CN.INPUTPAD
+	inputCost 100352
+	Checkpointed:  False
+
+
+ bn3a_branch2a 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ activation_11 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ res3a_branch2b 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Weights:  (3, 3, 128, 128)
+	checkpoint:  (1, 28, 28, 128) 100352
+	 CN.WEIGHTPAD
+	weightCost 61440
+	Checkpointed:  True
+
+
+ bn3a_branch2b 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ activation_12 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ res3a_branch2c 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 512)
+	Weights:  (1, 1, 128, 512)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn3a_branch2c 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 512)
+	Checkpointed:  False
+
+
+ res3a_branch1 	 status.REQ_INV (None, 56, 56, 256) (None, 28, 28, 512)
+	Weights:  (1, 1, 256, 512)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn3a_branch1 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 512)
+	Checkpointed:  False
+add_4 	 status.REQ_INV [(None, 28, 28, 512), (None, 28, 28, 512)] (None, 28, 28, 512)
+
+
+ activation_13 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 512)
+	Checkpointed:  False
+
+
+ res3b_branch2a 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 128)
+	Weights:  (1, 1, 512, 128)
+	 CN.INPUTPAD
+	inputCost 301056
+	Checkpointed:  False
+
+
+ bn3b_branch2a 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ activation_14 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ res3b_branch2b 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Weights:  (3, 3, 128, 128)
+	checkpoint:  (1, 28, 28, 128) 100352
+	 CN.WEIGHTPAD
+	weightCost 61440
+	Checkpointed:  True
+
+
+ bn3b_branch2b 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ activation_15 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ res3b_branch2c 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 512)
+	Weights:  (1, 1, 128, 512)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn3b_branch2c 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 512)
+	Checkpointed:  False
+add_5 	 status.REQ_INV [(None, 28, 28, 512), (None, 28, 28, 512)] (None, 28, 28, 512)
+
+
+ activation_16 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 512)
+	Checkpointed:  False
+
+
+ res3c_branch2a 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 128)
+	Weights:  (1, 1, 512, 128)
+	 CN.INPUTPAD
+	inputCost 301056
+	Checkpointed:  False
+
+
+ bn3c_branch2a 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ activation_17 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ res3c_branch2b 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Weights:  (3, 3, 128, 128)
+	checkpoint:  (1, 28, 28, 128) 100352
+	 CN.WEIGHTPAD
+	weightCost 61440
+	Checkpointed:  True
+
+
+ bn3c_branch2b 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ activation_18 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ res3c_branch2c 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 512)
+	Weights:  (1, 1, 128, 512)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn3c_branch2c 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 512)
+	Checkpointed:  False
+add_6 	 status.REQ_INV [(None, 28, 28, 512), (None, 28, 28, 512)] (None, 28, 28, 512)
+
+
+ activation_19 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 512)
+	Checkpointed:  False
+
+
+ res3d_branch2a 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 128)
+	Weights:  (1, 1, 512, 128)
+	 CN.INPUTPAD
+	inputCost 301056
+	Checkpointed:  False
+
+
+ bn3d_branch2a 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ activation_20 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ res3d_branch2b 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Weights:  (3, 3, 128, 128)
+	checkpoint:  (1, 28, 28, 128) 100352
+	 CN.WEIGHTPAD
+	weightCost 61440
+	Checkpointed:  True
+
+
+ bn3d_branch2b 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ activation_21 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 128)
+	Checkpointed:  False
+
+
+ res3d_branch2c 	 status.REQ_INV (None, 28, 28, 128) (None, 28, 28, 512)
+	Weights:  (1, 1, 128, 512)
+	 CN.NONE
+	Checkpointed:  False
+
+
+ bn3d_branch2c 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 512)
+	Checkpointed:  False
+add_7 	 status.REQ_INV [(None, 28, 28, 512), (None, 28, 28, 512)] (None, 28, 28, 512)
+
+
+ activation_22 	 status.REQ_INV (None, 28, 28, 512) (None, 28, 28, 512)
+	Checkpointed:  False
+
+
+ res4a_branch2a 	 status.REQ_INV (None, 28, 28, 512) (None, 14, 14, 256)
+	Weights:  (1, 1, 512, 256)
+	 CN.BOTH
+	weightCost 170496
+	inputCost 50176
+	Checkpointed:  False
+
+
+ bn4a_branch2a 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_23 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4a_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Weights:  (3, 3, 256, 256)
+	checkpoint:  (1, 14, 14, 256) 50176
+	 CN.WEIGHTPAD
+	weightCost 552960
+	Checkpointed:  True
+
+
+ bn4a_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_24 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4a_branch2c 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 1024)
+	Weights:  (1, 1, 256, 1024)
+	 CN.WEIGHTPAD
+	weightCost 15360
+	Checkpointed:  False
+
+
+ bn4a_branch2c 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+
+
+ res4a_branch1 	 status.REQ_INV (None, 28, 28, 512) (None, 14, 14, 1024)
+	Weights:  (1, 1, 512, 1024)
+	 CN.WEIGHTPAD
+	weightCost 170496
+	Checkpointed:  False
+
+
+ bn4a_branch1 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+add_8 	 status.REQ_INV [(None, 14, 14, 1024), (None, 14, 14, 1024)] (None, 14, 14, 1024)
+
+
+ activation_25 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+
+
+ res4b_branch2a 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 256)
+	Weights:  (1, 1, 1024, 256)
+	 CN.BOTH
+	weightCost 847872
+	inputCost 150528
+	Checkpointed:  False
+
+
+ bn4b_branch2a 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_26 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4b_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Weights:  (3, 3, 256, 256)
+	checkpoint:  (1, 14, 14, 256) 50176
+	 CN.WEIGHTPAD
+	weightCost 552960
+	Checkpointed:  True
+
+
+ bn4b_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_27 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4b_branch2c 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 1024)
+	Weights:  (1, 1, 256, 1024)
+	 CN.WEIGHTPAD
+	weightCost 15360
+	Checkpointed:  False
+
+
+ bn4b_branch2c 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+add_9 	 status.REQ_INV [(None, 14, 14, 1024), (None, 14, 14, 1024)] (None, 14, 14, 1024)
+
+
+ activation_28 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+
+
+ res4c_branch2a 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 256)
+	Weights:  (1, 1, 1024, 256)
+	 CN.BOTH
+	weightCost 847872
+	inputCost 150528
+	Checkpointed:  False
+
+
+ bn4c_branch2a 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_29 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4c_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Weights:  (3, 3, 256, 256)
+	checkpoint:  (1, 14, 14, 256) 50176
+	 CN.WEIGHTPAD
+	weightCost 552960
+	Checkpointed:  True
+
+
+ bn4c_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_30 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4c_branch2c 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 1024)
+	Weights:  (1, 1, 256, 1024)
+	 CN.WEIGHTPAD
+	weightCost 15360
+	Checkpointed:  False
+
+
+ bn4c_branch2c 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+add_10 	 status.REQ_INV [(None, 14, 14, 1024), (None, 14, 14, 1024)] (None, 14, 14, 1024)
+
+
+ activation_31 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+
+
+ res4d_branch2a 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 256)
+	Weights:  (1, 1, 1024, 256)
+	 CN.BOTH
+	weightCost 847872
+	inputCost 150528
+	Checkpointed:  False
+
+
+ bn4d_branch2a 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_32 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4d_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Weights:  (3, 3, 256, 256)
+	checkpoint:  (1, 14, 14, 256) 50176
+	 CN.WEIGHTPAD
+	weightCost 552960
+	Checkpointed:  True
+
+
+ bn4d_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_33 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4d_branch2c 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 1024)
+	Weights:  (1, 1, 256, 1024)
+	 CN.WEIGHTPAD
+	weightCost 15360
+	Checkpointed:  False
+
+
+ bn4d_branch2c 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+add_11 	 status.REQ_INV [(None, 14, 14, 1024), (None, 14, 14, 1024)] (None, 14, 14, 1024)
+
+
+ activation_34 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+
+
+ res4e_branch2a 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 256)
+	Weights:  (1, 1, 1024, 256)
+	 CN.BOTH
+	weightCost 847872
+	inputCost 150528
+	Checkpointed:  False
+
+
+ bn4e_branch2a 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_35 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4e_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Weights:  (3, 3, 256, 256)
+	checkpoint:  (1, 14, 14, 256) 50176
+	 CN.WEIGHTPAD
+	weightCost 552960
+	Checkpointed:  True
+
+
+ bn4e_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_36 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4e_branch2c 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 1024)
+	Weights:  (1, 1, 256, 1024)
+	 CN.WEIGHTPAD
+	weightCost 15360
+	Checkpointed:  False
+
+
+ bn4e_branch2c 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+add_12 	 status.REQ_INV [(None, 14, 14, 1024), (None, 14, 14, 1024)] (None, 14, 14, 1024)
+
+
+ activation_37 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+
+
+ res4f_branch2a 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 256)
+	Weights:  (1, 1, 1024, 256)
+	 CN.BOTH
+	weightCost 847872
+	inputCost 150528
+	Checkpointed:  False
+
+
+ bn4f_branch2a 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_38 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4f_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Weights:  (3, 3, 256, 256)
+	checkpoint:  (1, 14, 14, 256) 50176
+	 CN.WEIGHTPAD
+	weightCost 552960
+	Checkpointed:  True
+
+
+ bn4f_branch2b 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ activation_39 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 256)
+	Checkpointed:  False
+
+
+ res4f_branch2c 	 status.REQ_INV (None, 14, 14, 256) (None, 14, 14, 1024)
+	Weights:  (1, 1, 256, 1024)
+	 CN.WEIGHTPAD
+	weightCost 15360
+	Checkpointed:  False
+
+
+ bn4f_branch2c 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+add_13 	 status.REQ_INV [(None, 14, 14, 1024), (None, 14, 14, 1024)] (None, 14, 14, 1024)
+
+
+ activation_40 	 status.REQ_INV (None, 14, 14, 1024) (None, 14, 14, 1024)
+	Checkpointed:  False
+
+
+ res5a_branch2a 	 status.REQ_INV (None, 14, 14, 1024) (None, 7, 7, 512)
+	Weights:  (1, 1, 1024, 512)
+	 CN.BOTH
+	weightCost 998400
+	inputCost 25088
+	Checkpointed:  False
+
+
+ bn5a_branch2a 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ activation_41 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ res5a_branch2b 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Weights:  (3, 3, 512, 512)
+	checkpoint:  (1, 7, 7, 512) 25088
+	 CN.WEIGHTPAD
+	weightCost 2354688
+	Checkpointed:  True
+
+
+ bn5a_branch2b 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ activation_42 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ res5a_branch2c 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 2048)
+	Weights:  (1, 1, 512, 2048)
+	 CN.WEIGHTPAD
+	weightCost 245760
+	Checkpointed:  False
+
+
+ bn5a_branch2c 	 status.REQ_INV (None, 7, 7, 2048) (None, 7, 7, 2048)
+	Checkpointed:  False
+
+
+ res5a_branch1 	 status.REQ_INV (None, 14, 14, 1024) (None, 7, 7, 2048)
+	Weights:  (1, 1, 1024, 2048)
+	 CN.WEIGHTPAD
+	weightCost 998400
+	Checkpointed:  False
+
+
+ bn5a_branch1 	 status.REQ_INV (None, 7, 7, 2048) (None, 7, 7, 2048)
+	Checkpointed:  False
+add_14 	 status.REQ_INV [(None, 7, 7, 2048), (None, 7, 7, 2048)] (None, 7, 7, 2048)
+
+
+ activation_43 	 status.REQ_INV (None, 7, 7, 2048) (None, 7, 7, 2048)
+	Checkpointed:  False
+
+
+ res5b_branch2a 	 status.REQ_INV (None, 7, 7, 2048) (None, 7, 7, 512)
+	Weights:  (1, 1, 2048, 512)
+	 CN.BOTH
+	weightCost 4233216
+	inputCost 75264
+	Checkpointed:  False
+
+
+ bn5b_branch2a 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ activation_44 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ res5b_branch2b 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Weights:  (3, 3, 512, 512)
+	checkpoint:  (1, 7, 7, 512) 25088
+	 CN.WEIGHTPAD
+	weightCost 2354688
+	Checkpointed:  True
+
+
+ bn5b_branch2b 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ activation_45 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ res5b_branch2c 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 2048)
+	Weights:  (1, 1, 512, 2048)
+	 CN.WEIGHTPAD
+	weightCost 245760
+	Checkpointed:  False
+
+
+ bn5b_branch2c 	 status.REQ_INV (None, 7, 7, 2048) (None, 7, 7, 2048)
+	Checkpointed:  False
+add_15 	 status.REQ_INV [(None, 7, 7, 2048), (None, 7, 7, 2048)] (None, 7, 7, 2048)
+
+
+ activation_46 	 status.REQ_INV (None, 7, 7, 2048) (None, 7, 7, 2048)
+	Checkpointed:  False
+
+
+ res5c_branch2a 	 status.REQ_INV (None, 7, 7, 2048) (None, 7, 7, 512)
+	Weights:  (1, 1, 2048, 512)
+	 CN.BOTH
+	weightCost 4233216
+	inputCost 75264
+	Checkpointed:  False
+
+
+ bn5c_branch2a 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ activation_47 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ res5c_branch2b 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Weights:  (3, 3, 512, 512)
+	checkpoint:  (1, 7, 7, 512) 25088
+	 CN.WEIGHTPAD
+	weightCost 2354688
+	Checkpointed:  True
+
+
+ bn5c_branch2b 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ activation_48 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 512)
+	Checkpointed:  False
+
+
+ res5c_branch2c 	 status.REQ_INV (None, 7, 7, 512) (None, 7, 7, 2048)
+	Weights:  (1, 1, 512, 2048)
+	 CN.WEIGHTPAD
+	weightCost 245760
+	Checkpointed:  False
+
+
+ bn5c_branch2c 	 status.REQ_INV (None, 7, 7, 2048) (None, 7, 7, 2048)
+	Checkpointed:  False
+add_16 	 status.REQ_INV [(None, 7, 7, 2048), (None, 7, 7, 2048)] (None, 7, 7, 2048)
+
+
+ activation_49 	 status.REQ_INV (None, 7, 7, 2048) (None, 7, 7, 2048)
+	Checkpointed:  False
+
+
+ avg_pool 	 status.REQ_INV (None, 7, 7, 2048) (None, 2048)
+	checkpoint:  (1, 7, 7, 2048) 100352
+	Checkpointed:  True
+
+
+ fc1000 	 status.NO_INV (None, 2048) (None, 1000)
+	Weights:  (2048, 1000)
+	 DN.WEIGHTPAD
+	Cost 2047000
+	Checkpointed:  False

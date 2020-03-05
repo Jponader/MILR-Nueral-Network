@@ -31,7 +31,7 @@ class MILR:
 
 		#self.print(self.milrHead)
 		#self.reverseprint(self.milrModel[-1])
-		self.splitprint(self.milrHead)
+		#self.splitprint(self.milrHead)
 		del self.model
 		self.initalize()
 

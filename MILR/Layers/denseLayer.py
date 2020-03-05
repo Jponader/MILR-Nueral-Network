@@ -80,6 +80,7 @@ class denseLayer(layerNode):
 		#outputs = np.matmul(inputData, self.Tlayer.kernel[:])
 
 		self.rawOut = outputs
+		print('	Weights: ',self.Tlayer.kernel.shape)
 
 		layer = self.Tlayer
 		assert len(inputData.shape) == 2, "Error: Dense Input Not 2D"
@@ -136,6 +137,17 @@ class denseLayer(layerNode):
 			outputs = outputs[:m,:p]
 		else:
 			self.store = None
+
+		print('	',self.padded)
+
+		cost = 0
+		for i in self.store:
+			hold = 1
+			for j in i.shape:
+				hold = hold * j
+			cost += hold
+
+		print('	Cost',cost)
 
 		#assert np.allclose(self.rawOut, outputs,  atol=1e-06), "out wrong"
 

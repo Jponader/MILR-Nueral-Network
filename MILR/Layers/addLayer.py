@@ -12,7 +12,7 @@ class addLayer(layerNode):
 		self.inputData.append(inputData)
 
 		if self.canStartInilize():
-			print(self)
+			print(self,"	", status, self.Tlayer.input_shape, self.Tlayer.output_shape)
 
 			assert inputData is not None, ("ERROR : No input data for next round")
 
