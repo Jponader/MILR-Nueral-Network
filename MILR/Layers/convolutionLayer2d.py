@@ -29,13 +29,13 @@ class convolutionLayer2d(layerNode):
 		#self.hasBias = config['use_bias']
 		#self.activationFunc = config['activation']
 		
+#to be configured
+	def partialCheckpoint(self):
+		#CheckPoint, Error
+		return self.checkpointed,False
 
+	#To add partial checkpoint
 	def layerInitilizer(self, inputData, status):
-		self.rawIn = inputData
-		self.rawKernel = self.Tlayer.kernel
-		outputs = self.Tlayer._convolution_op(inputData, self.Tlayer.kernel)
-		self.rawOut = outputs
-
 		layer = self.Tlayer
 
 		print('	Weights: ',layer.kernel.shape)
@@ -46,60 +46,77 @@ class convolutionLayer2d(layerNode):
 		Z = inputData.shape[3]
 		F = layer.kernel.shape[0]
 		Y = layer.kernel.shape[3]
-		N = int(((M-F)/layer.strides[0])+1)
+
+		# N needs to be set based on padding type for convolution, to be addressed
+		if layer.padding.upper() == "SAME":
+			N = M
+		else:
+			N = int(((M-F)/layer.strides[0])+1)
+
 		FFZ = F*F*Z
+
 		self.padded = CN.NONE
+		self.CRC = False
+		self.store = [None,None,None]
+
+		nPad = N
 
 		if N*N < FFZ:
 			nPad = math.ceil(math.sqrt(FFZ))
-			self.padded = CN.WEIGHTPAD
-		else:
-			nPad = N
+			weightCost = (nPad**2 - (N**2))*Y
+
+			if weightCost <= FFZ*Y/2:
+				self.padded = CN.WEIGHTPAD
+			else:
+				self.CRC = True
 		
 		inputCost = 0
 
 		if status == STAT.NO_INV:
 			status =  STAT.REQ_INV
-		else:
-			if Y < FFZ:
-				yPad = FFZ -Y
-				inputCost = yPad * N**2
-				if (M*M*Z) < inputCost:
-					self.checkpoint(inputData)
-				else:
-					if self.padded == CN.WEIGHTPAD:
-						self.padded = CN.BOTH
-					else:
-						self.padded = CN.INPUTPAD	
-
-		weightCost = (nPad**2 - (N*N))*Z
-		#print("npad", nPad)
-		#print("N", N)
-		#print("weightCost",weightCost)
-		#print("inputCost", inputCost)
-		#print(self.checkpointed)
-		print('	',self.padded)
-
+		elif F < layer.strides[0]:
+			self.checkpoint(inputData)
+		elif Y < FFZ:
+			yPad = FFZ -Y
+			inputCost = yPad * N**2
+			if (M*M*Z) < inputCost:
+				self.checkpoint(inputData)
+			elif self.padded == CN.WEIGHTPAD:
+				self.padded = CN.BOTH
+			else:
+				self.padded = CN.INPUTPAD	
 
 		if self.padded == CN.BOTH or self.padded == CN.WEIGHTPAD:
-			inputSize = ((nPad -1)*layer.strides[0]) + F
+			if layer.padding.upper() == "SAME":
+				inputSize =  nPad
+			else:
+				inputSize = ((nPad -1)*layer.strides[0]) + F
+
 			mPad = inputSize - M
+			print('	MPAD: ', mPad)
 			np.random.seed(self.seeder())
 			pad1 =  tf.convert_to_tensor(np.random.rand(1,mPad,M,Z),  dtype= self.Tlayer.dtype)
 			paddedInput = tf.concat([inputData,pad1], 1)
 			pad2 =  tf.convert_to_tensor(np.random.rand(1,M+mPad,mPad,Z),  dtype= self.Tlayer.dtype)
 			paddedInput = tf.concat([paddedInput,pad2], 2)
 			paddedOut = tf.nn.conv2d(paddedInput, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
-			print("	weightCost",weightCost)
+			print(paddedOut.shape)
+			self.store[0] = (paddedOut[:,N:],paddedOut[:,:N,N:])
+			print(self.store[0])
+
 
 		if self.padded == CN.BOTH or self.padded == CN.INPUTPAD:
 			extraFilters = self.seededRandomTensor((F,F,Z,yPad))
 			extraFiltered = tf.nn.conv2d(inputData, extraFilters, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
-			print("	inputCost", inputCost)
-		
-		outputs = tf.nn.conv2d(inputData, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
+			self.store[1]  =extraFiltered
 
-		assert np.allclose(self.rawOut, outputs,  atol=1e-08), "out wrong"
+		if self.CRC:
+			self.store[2] = None
+			pass
+
+		#Store the additional data
+
+		outputs = tf.nn.conv2d(inputData, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':

@@ -61,18 +61,45 @@ def weightSolver():
 	print(sol)
 	print(layer.rawKernel[:])
 
-	assert np.allclose(sol[:], layer.rawKernel[:],  atol=1e-08), "weights wrong"
+	assert np.allclose(sol[:], layer.rawKernel[:],  atol=1e-06), "weights wrong"
 
 def matrixMath():
-	inMat = tf.convert_to_tensor(np.random.rand(784,784),  dtype= 'float64')
-	weights = tf.convert_to_tensor(np.random.rand(784,128), dtype= 'float64')
+	inMat = tf.convert_to_tensor(np.random.rand(256,256),  dtype= 'float32')
+	weights = tf.convert_to_tensor(np.random.rand(256,256), dtype= 'float32')
 	out =  gen_math_ops.mat_mul(inMat, weights)
-	print(out.shape)
 
-	solved = linalg.lstsq(inMat, out, fast=False)
-	print(solved.shape)
+	# Solve for Weights
 
-	assert np.allclose(weights, solved,  atol=1e-08), "weights wrong"
+	#solved = tf.linalg.lstsq( inMat, out, l2_regularizer=0.0, fast=False, name=None)
+	#inMat64 = tf.cast(inMat, 'float64', name=None)
+	#out64 = tf.cast(out, 'float64', name=None)
+
+
+
+	solved = tf.linalg.solve( inMat, out, adjoint=False, name=None)
+	#solved = tf.cast(solved, 'float32', name=None)
+
+	#solved = linalg.lstsq(inMat, out, fast=False)
+	print(solved)
+	print(weights)
+
+	assert np.allclose(weights, solved,  atol=1e-05), "weights wrong"
+
+	#solve for Input
+
+	weightsT = tf.transpose( weights, perm=None, conjugate=False, name='transpose')
+	outT = tf.transpose( out, perm=None, conjugate=False, name='transpose')
+
+	solvedInput = tf.linalg.solve( weightsT, outT, adjoint=False, name=None)
+	solvedInput = tf.transpose( solvedInput, perm=None, conjugate=False, name='transpose')
+
+	print(inMat)
+	print(solvedInput)
+
+	assert np.allclose(inMat, solvedInput,  atol=1e-05), "input wrong"
+
+	out2 =  gen_math_ops.mat_mul(solvedInput, solved)
+	assert np.allclose(out, out2,  atol=1e-05), "end wrong"
 
 def padder2D():
 	hold = tf.convert_to_tensor(np.random.rand(1,2))
@@ -92,8 +119,11 @@ def padding4D():
 	paddedInput = tf.concat([paddedInput,pad2], 2)
 	print(paddedInput.shape)
 
+def denseLayerValidation():
+	pass
+
 def main():
-	padding4D()
+
 
 if __name__ == '__main__':
     main()

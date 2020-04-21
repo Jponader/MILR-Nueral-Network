@@ -19,4 +19,5 @@ class nonInvertibleCheckpoint(layerNode):
 			self.checkpoint(inputData)
 		return self.Tlayer.call(inputData), STAT.NO_INV
 
+
 		

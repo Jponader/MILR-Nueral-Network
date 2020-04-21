@@ -3,9 +3,14 @@ from MILR.status import status as STAT
 import sys
 import math
 import numpy as np
+from math import ceil
+from zlib import crc32
 import tensorflow as tf
-from random import randint, seed
 from datetime import datetime
+from random import randint, seed
+
+CRCCODE = int('9d7f97d6',16)
+
 
 class layerNode:
 
@@ -24,6 +29,10 @@ class layerNode:
 	def __str__(self):
 		return self.name 
 		#+ " Next " + str(len(self.next)) + " Prev " + str(len(self.prev))
+
+	def partialCheckpoint(self):
+		#CheckPoint, Error
+		return self.checkpointed,False
 
 	def initilize(self, status = STAT.START, inputData = None):
 		if status == STAT.START:
@@ -52,7 +61,7 @@ class layerNode:
 
 	def checkpoint(self, inputs):
 		self.checkpointed = True
-		self.checkpoint = inputs
+		self.checkpointData = inputs
 		cost = 1
 		for i in inputs.shape:
 			cost = cost*i
@@ -71,6 +80,39 @@ class layerNode:
 	def padder2D(self,inputs, x, y, axis):
 		out = self.seededRandomTensor((x,y))
 		return tf.concat([inputs,out], axis)
+
+	def CRC2D(self, data):
+		shape = data.shape
+		output = [np.zeros((shape[0],int(ceil(shape[1]/4)))),np.zeros((int(ceil(shape[0]/4)),shape[1]))]
+
+		for i in range(shape[0]):
+			for j in range(int(ceil(shape[1]/4))):
+				output[0][i][j] = crc32(data[i,j*4:(j*4)+4],CRCCODE)
+
+		for i in range(int(ceil(shape[0]/4))):
+			for j in range(shape[1]):
+				output[1][i][j] = crc32(data[i*4:(i*4)+4,j],CRCCODE)	
+
+		return output
+
+	def CRC2dErrorFinder(self, data1, data2):
+		results = np.equal(data1[0], data2[0])
+		results2 = np.equal(data1[1], data2[1])
+
+		columns = np.argwhere(results == False)
+		rows = np.argwhere(results2 == False)
+
+		errorMatrix = []
+
+		for col in columns:
+			index = col[1] * 4
+			for r in rows:
+				if r[1] >= index and r[1]< index +4:
+					check = r[0]*4
+					if col[0] >= check and col[0]< check +4:
+						errorMatrix.append([col[0],r[1]])
+
+		return np.array(errorMatrix, dtype=np.int32)
 
 	def startMetadata(self):
 		self.checkpoint = True

@@ -11,5 +11,11 @@ class batchNormalization(layerNode):
 		#self.epsilon = config['epsilon']
 
 	def layerInitilizer(self, inputData, status):
+		#add partial Checkpoint
 		out = self.Tlayer.call(inputData)
 		return out, STAT.REQ_INV
+
+	#to be configured
+	def partialCheckpoint(self):
+		#CheckPoint, Error
+		return self.checkpointed,False

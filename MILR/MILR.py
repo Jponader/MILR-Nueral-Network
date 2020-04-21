@@ -3,8 +3,6 @@ from tensorflow import keras
 import numpy as np
 import sys
 
-
-
 #Handles the Simplifivation of TF Layer Classing
 from tensorflow.keras import layers as L
 
@@ -35,8 +33,19 @@ class MILR:
 		del self.model
 		self.initalize()
 
+		self.scrubbing()
+
 	def initalize(self):
 		self.milrHead.initilize()
+
+	def scrubbing(self):
+		print("Start scrubbing")
+		for layer in self.milrModel:
+			check, error = layer.partialCheckpoint()
+			if error:
+				print("error:", layer)
+
+		print("scrubbing complete")
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
