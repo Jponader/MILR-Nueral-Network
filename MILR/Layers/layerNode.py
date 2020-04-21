@@ -91,7 +91,7 @@ class layerNode:
 
 		for i in range(int(ceil(shape[0]/4))):
 			for j in range(shape[1]):
-				output[1][i][j] = crc32(data[i*4:(i*4)+4,j],CRCCODE)	
+				output[1][i][j] = crc32(np.ascontiguousarray(data[i*4:(i*4)+4,j]),CRCCODE)	
 
 		return output
 
@@ -113,6 +113,9 @@ class layerNode:
 						errorMatrix.append([col[0],r[1]])
 
 		return np.array(errorMatrix, dtype=np.int32)
+
+	def cost(self):
+		return 0
 
 	def startMetadata(self):
 		self.checkpoint = True

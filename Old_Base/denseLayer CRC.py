@@ -30,10 +30,10 @@ class denseLayer(layerNode):
 		#self.activationFunc = config['activation']
 
 	def partialCheckpoint(self):
-		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
-		checkdata  = gen_math_ops.mat_mul(partailInput, self.Tlayer.kernel)[0,:]
+		partailInput = self.seededRandomTensor((1,self.Tlayer.input_shape[1]))
+		checkdata  = gen_math_ops.mat_mul(partailInput, self.Tlayer.kernel)[0][0]
 		#CheckPoint, Error
-		return self.checkpointed, not np.allclose(checkdata, self.partialData, atol=1e-08)
+		return self.checkpointed,self.partialData != checkdata
 
 	def forwardPass(self, inputs):
 		inputs = math_ops.cast(inputs, self.Tlayer._compute_dtype)
@@ -49,7 +49,73 @@ class denseLayer(layerNode):
 		m = self.keys['M']
 		n = self.keys['N']
 		p = self.keys['P']
+'''
+		if self.padded == DN.CRC:
 
+#Validation To Be Removed
+			weight = np.array(self.Tlayer.get_weights())
+			weight[0][0][0] = 1
+			weight[0][4][4] = 1
+			#weight[0][9][4] = 1
+			weight[0][3][2] = 1
+			weight[0][5][1] = 1
+			weight[0][6][6] = 1
+			#print(weight[0][:9,:9])
+			self.Tlayer.set_weights(weight)
+
+
+			crcData = self.CRC2D(self.Tlayer.kernel)
+			errorLoc = self.CRC2dErrorFinder(self.store, crcData)
+			print()
+			print(errorLoc)
+
+			errRow = np.unique(errorLoc[:,0])
+			errCol, count = np.unique(errorLoc[:,1], return_counts=True)
+
+			print(errRow)
+			print(errCol)
+			print(count)
+
+			errN = len(errRow)
+			errP = len(errCol)
+
+			if errP < errN:
+				errP == errN
+
+
+			if errP * errN > self.keys['M'] * self.keys['P']:
+				# reduce the number of errors
+					#for err in ranger(0,len(errorLoc)):
+				assert errP * errN > self.keys['M'] * self.keys['P'], "To Many Errors for CRC to Recover"
+
+			inputArray = []
+
+			for row in errRow:
+				inputArray.append(inputs[:,row])
+
+			inputArray = np.array(inputArray)
+
+			print(inputArray)
+
+			outArray = []
+
+			for col in errCol:
+				#Need to modift the outVal so that it takes into account the less computation
+				outArray.append(outputs[:, col])
+	
+			outArray = np.array(outArray)
+			print(outArray)
+			
+			#sol = tf.linalg.solve( inputArray, outArray, adjoint=False, name=None)
+			#solvedInput = np.linalg.solve(weights.T, output.T)
+			print(inputArray.shape)
+			print(outArray.shape)
+			sol = np.linalg.lstsq(inputArray, outArray,rcond=-1)
+			print(sol)
+			
+
+		else:
+		'''
 		mPad, pPad = self.densePadding(m,n,p)
 
 		if self.padded != DN.NONE:
@@ -85,15 +151,17 @@ class denseLayer(layerNode):
 	def layerInitilizer(self, inputData, status):
 
 		# partial checkpoint
-		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
-		self.partialData  = gen_math_ops.mat_mul(partailInput, self.Tlayer.kernel)[0,:]
+		partailInput = self.seededRandomTensor((1,self.Tlayer.input_shape[1]))
+		self.partialData  = gen_math_ops.mat_mul(partailInput, self.Tlayer.kernel)[0][0]
 		
 # Validatioon - TO BE REMOVED
 		self.rewStatus = status
 		self.rawIn = inputData
 		self.rawKernel = self.Tlayer.kernel
 		inputData = math_ops.cast(inputData, self.Tlayer._compute_dtype)
-		self.rawOut  = gen_math_ops.mat_mul(inputData, self.Tlayer.kernel)
+		outputs = gen_math_ops.mat_mul(inputData, self.Tlayer.kernel)
+		self.rawOut = outputs
+
 
 		layer = self.Tlayer
 		assert len(inputData.shape) == 2, "Error: Dense Input Not 2D"
@@ -110,13 +178,21 @@ class denseLayer(layerNode):
 		weightCost = mPad * p - MP
 		inputCost = mPad*pPad - MP
 		checkpointCost = m * n
+		crcCost = MP/2
+
+		if crcCost < weightCost:
+			minCost = crcCost
+			crc = True
+		else:
+			minCost = weightCost
+			crc = False
 
 		if status == STAT.NO_INV:
 			self.padded = DN.NONE
 			status =  STAT.REQ_INV
 			pPad = p
 		else:
-			if (checkpointCost + weightCost) < inputCost:
+			if (checkpointCost + minCost) < inputCost:
 				self.checkpoint(inputData)
 				self.padded = DN.NONE
 				pPad = p
@@ -124,9 +200,11 @@ class denseLayer(layerNode):
 				self.checkpointed = False
 				self.padded = DN.INPUTPAD
 
-	#Does it need padding
 		if self.padded == DN.NONE:
-			if n > m:
+			if crc:
+				self.padded = DN.CRC
+				mPad = m
+			else:
 				self.padded = DN.WEIGHTPAD
 
 # Create Padding
@@ -142,15 +220,21 @@ class denseLayer(layerNode):
 		inputData = math_ops.cast(inputData, self.Tlayer._compute_dtype)
 		outputs = gen_math_ops.mat_mul(inputData, kernel)
 
+		if self.padded == DN.CRC:
+			crcData = self.CRC2D(layer.kernel)
+
 # Validatioon - TO BE REMOVED
 		self.manOut = outputs
 
+
 		if self.padded == DN.WEIGHTPAD:
-			self.store = [outputs[m:,:p]]
+			self.store = [outputs[m:]]
 			outputs = outputs[:m,:p]
 		elif self.padded == DN.INPUTPAD:
 			self.store = [outputs[m:,:p], outputs[:,p:]]
 			outputs = outputs[:m,:p]
+		elif self.padded == DN.CRC:
+			self.store = crcData
 		else:
 			self.store = None
 
@@ -167,11 +251,9 @@ class denseLayer(layerNode):
 				hold = hold * j
 			cost += hold
 		print('	Cost',cost)
-		print('	total Cost', self.cost())
 
 
-		# Validatioon - TO BE REMOVED
-		"""
+# Validatioon - TO BE REMOVED
 		assert np.allclose(self.rawOut, outputs,  atol=1e-04), "out wrong"
 
 		if self.padded == DN.WEIGHTPAD or self.padded == DN.INPUTPAD:
@@ -191,41 +273,16 @@ class denseLayer(layerNode):
 			if not np.allclose(reInput, self.rawIn, atol=1e-06):
 				print("Error Backward pass")
 
-		reKernl = self.kernelSolver(self.rawIn, outputs)
-		print(reKernl)
-		print(type(reKernl))
-		print(self.Tlayer.kernel)
-		print(type(self.Tlayer.kernel))
-		"""
-		# END VALIDATION		
+		reKernl = self.kernelSolver(self.rawIn, self.rawOut)
+		#if not np.allclose(reKernl, self.Tlayer.kernel, atol=1e-06):
+				#print("Error Backward pass")
+
+# END VALIDATION		
 
 		if layer.use_bias:
 			outputs, status = biasLayer.layerInitilizer(outputs, layer.bias, status)
 
 		return activationLayer.staticInitilizer(outputs, layer.activation, status)
-
-
-	def cost(self):
-		total = 0
-		if self.checkpointed:
-			cost = 1
-			for i in self.checkpointData.shape:
-				cost = cost*i
-			total = total + cost
-
-		cost = 0
-		for i in self.store:
-			hold = 1
-			if i == None:
-				continue
-			for j in i.shape:
-				hold = hold * j
-			cost += hold
-
-		total = total + cost
-
-		return total
-
 
 	def densePadding(self, m,n,p):
 		if m < n:

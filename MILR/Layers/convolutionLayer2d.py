@@ -29,13 +29,24 @@ class convolutionLayer2d(layerNode):
 		#self.hasBias = config['use_bias']
 		#self.activationFunc = config['activation']
 		
-#to be configured
+
 	def partialCheckpoint(self):
+		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
+		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper(), dilations=self.Tlayer.dilation_rate)[0,0,:]
 		#CheckPoint, Error
-		return self.checkpointed,False
+		return self.checkpointed, not np.allclose(checkdata, self.partialData, atol=1e-08)
 
 	#To add partial checkpoint
 	def layerInitilizer(self, inputData, status):
+		# partial checkpoint
+		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
+		self.partialData = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper(), dilations=self.Tlayer.dilation_rate)[0,0,:]
+
+#Validation Data to be Removed
+		self.rawIn = inputData
+		self.rawKernel = self.Tlayer.kernel
+		self.rawOut = tf.nn.conv2d(inputData, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper(), dilations=self.Tlayer.dilation_rate)
+
 		layer = self.Tlayer
 
 		print('	Weights: ',layer.kernel.shape)
@@ -54,22 +65,25 @@ class convolutionLayer2d(layerNode):
 			N = int(((M-F)/layer.strides[0])+1)
 
 		FFZ = F*F*Z
+		NN = N*N
 
 		self.padded = CN.NONE
 		self.CRC = False
-		self.store = [None,None,None]
+		self.store = [None,None]
 
 		nPad = N
 
+#Determine Padding Type and Requirments
 		if N*N < FFZ:
-			nPad = math.ceil(math.sqrt(FFZ))
-			weightCost = (nPad**2 - (N**2))*Y
+			nPad = math.ceil(math.sqrt(FFZ-NN))
+			weightCost = (nPad**2)*Y
 
 			if weightCost <= FFZ*Y/2:
 				self.padded = CN.WEIGHTPAD
 			else:
 				self.CRC = True
 		
+#-----
 		inputCost = 0
 
 		if status == STAT.NO_INV:
@@ -84,39 +98,46 @@ class convolutionLayer2d(layerNode):
 			elif self.padded == CN.WEIGHTPAD:
 				self.padded = CN.BOTH
 			else:
-				self.padded = CN.INPUTPAD	
-
+				self.padded = CN.INPUTPAD
+		
+# Weight Padding
 		if self.padded == CN.BOTH or self.padded == CN.WEIGHTPAD:
 			if layer.padding.upper() == "SAME":
 				inputSize =  nPad
 			else:
 				inputSize = ((nPad -1)*layer.strides[0]) + F
 
-			mPad = inputSize - M
-			print('	MPAD: ', mPad)
-			np.random.seed(self.seeder())
-			pad1 =  tf.convert_to_tensor(np.random.rand(1,mPad,M,Z),  dtype= self.Tlayer.dtype)
-			paddedInput = tf.concat([inputData,pad1], 1)
-			pad2 =  tf.convert_to_tensor(np.random.rand(1,M+mPad,mPad,Z),  dtype= self.Tlayer.dtype)
-			paddedInput = tf.concat([paddedInput,pad2], 2)
-			paddedOut = tf.nn.conv2d(paddedInput, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
-			print(paddedOut.shape)
-			self.store[0] = (paddedOut[:,N:],paddedOut[:,:N,N:])
+			mPad = inputSize 
+			newInput = self.seededRandomTensor((1,mPad,mPad,Z))
+			newOut = tf.nn.conv2d(newInput, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
+			self.store[0] = (newOut)
+		elif self.CRC:
+			out = []
+			print(type(layer.get_weights()[0]))
+			print(layer.get_weights()[0].shape)
+			for f1 in layer.get_weights()[0]:
+				for f2 in f1:
+					out.append(self.CRC2D(f2))
+			self.store[0] = np.array(out)
 			print(self.store[0])
+# TO ADD CRC
+			pass
 
-
+#Input Padding DONE!!!
 		if self.padded == CN.BOTH or self.padded == CN.INPUTPAD:
 			extraFilters = self.seededRandomTensor((F,F,Z,yPad))
 			extraFiltered = tf.nn.conv2d(inputData, extraFilters, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
 			self.store[1]  =extraFiltered
 
-		if self.CRC:
-			self.store[2] = None
-			pass
-
-		#Store the additional data
-
 		outputs = tf.nn.conv2d(inputData, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
+
+# Print Summary
+		print("	padded:", self.padded)
+		print("	CRC:", self.CRC)
+		print('	total Cost', self.cost())
+
+
+
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
@@ -137,6 +158,38 @@ class convolutionLayer2d(layerNode):
 				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NHWC')
 
 		return activationLayer.forwardPass(outputs, layer.activation)
+
+	def cost(self):
+		total = 0
+		if self.checkpointed:
+			cost = 1
+			for i in self.checkpointData.shape:
+				cost = cost*i
+			total = total + cost
+
+		cost = 0
+		for i in self.store:
+			if i == None:
+				continue
+
+			if self.CRC == True and cost == 0:
+				for j in i:
+					for n in j:
+						hold = 1
+						for n in n.shape:
+							hold = hold * n
+						cost += hold
+			else:
+				hold = 1
+				for j in i.shape:
+					hold = hold * j
+				cost += hold
+
+		total = total + cost
+
+		return total
+
+
 
 
 class CN(Enum):
