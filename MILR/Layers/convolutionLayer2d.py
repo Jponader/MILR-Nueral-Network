@@ -36,6 +36,65 @@ class convolutionLayer2d(layerNode):
 		#CheckPoint, Error
 		return self.checkpointed, not np.allclose(checkdata, self.partialData, atol=1e-08)
 
+	def forwardPass(self, inputs):
+		layer = self.Tlayer
+		outputs = layer._convolution_op(inputs, layer.kernel)
+
+		if layer.use_bias:
+			if layer.data_format == 'channels_first':
+				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NCHW')
+			else:
+				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NHWC')
+
+		return activationLayer.forwardPass(outputs, layer.activation)
+
+	def kernelSolver(self, inputs, outputs):
+		#self.keys ={'F':F, 'Z':Z, 'M':M, 'N':N, 'Y':Y, 'yPad':yPad, 'mPad':mPad}
+		# consider padding Same and Valid
+		# Additional input data
+
+		pass
+
+	def backwardPass(self, outputs):
+		#self.keys ={'F':F, 'Z':Z, 'M':M, 'N':N, 'Y':Y, 'yPad':yPad, 'mPad':mPad}
+		F = self.keys['F']
+		Z = self.keys['Z']
+		M = self.keys['M']
+		yPad = self.keys['yPad']
+		FFZ = F*F*Z
+
+		layer = self.Tlayer
+
+		if self.checkpointed:
+			return self.checkpointData
+
+		filterMatrix = []
+		for filters in np.array(layer.get_weights()[0]).T:
+			filterMatrix.append(filters.flatten())
+
+		if self.padded == CN.INPUTPAD or self.padded == CN.BOTH:
+			for filters in np.array(self.seededRandomTensor((F,F,Z,yPad))).T:
+				filterMatrix.append(filters.flatten())
+
+			outputs = tf.concat([outputs, self.store[1]], 3)
+			
+		filterMatrix = np.array(filterMatrix)
+		filterShape = filterMatrix.shape
+		print(filterShape)
+		print(outputs.shape)
+
+		print(filterMatrix[:FFZ,:FFZ].shape)
+		print(outputs[0,0,0,:FFZ].shape)
+
+		out = []
+		for i in range(M):
+			for j in range(M):
+				out.append(np.linalg.solve(filterMatrix[:FFZ,:FFZ],outputs[0,i,j,:FFZ]))
+		
+		out = np.array(out)
+		return [np.reshape(out,(M,M,Z))]
+
+
 	#To add partial checkpoint
 	def layerInitilizer(self, inputData, status):
 		# partial checkpoint
@@ -43,6 +102,11 @@ class convolutionLayer2d(layerNode):
 		self.partialData = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper(), dilations=self.Tlayer.dilation_rate)[0,0,:]
 
 #Validation Data to be Removed
+		if status == STAT.NO_INV:
+			skipKernel = False
+		else:
+			skipKernel = True
+
 		self.rawIn = inputData
 		self.rawKernel = self.Tlayer.kernel
 		self.rawOut = tf.nn.conv2d(inputData, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper(), dilations=self.Tlayer.dilation_rate)
@@ -71,6 +135,8 @@ class convolutionLayer2d(layerNode):
 		self.CRC = False
 		self.store = [None,None]
 
+		mPad = N
+		yPad = FFZ -Y
 		nPad = N
 
 #Determine Padding Type and Requirments
@@ -83,7 +149,6 @@ class convolutionLayer2d(layerNode):
 			else:
 				self.CRC = True
 		
-#-----
 		inputCost = 0
 
 		if status == STAT.NO_INV:
@@ -100,7 +165,9 @@ class convolutionLayer2d(layerNode):
 			else:
 				self.padded = CN.INPUTPAD
 		
-# Weight Padding
+
+
+# Weight Padding and CRC
 		if self.padded == CN.BOTH or self.padded == CN.WEIGHTPAD:
 			if layer.padding.upper() == "SAME":
 				inputSize =  nPad
@@ -113,6 +180,11 @@ class convolutionLayer2d(layerNode):
 			self.store[0] = (newOut)
 		elif self.CRC:
 			out = []
+			for f1 in layer.get_weights()[0]:
+				for f2 in f1:
+					out.append(self.CRC2D(f2))
+			self.store[0] = np.array(out)
+
 			print(type(layer.get_weights()[0]))
 			print(layer.get_weights()[0].shape)
 			for f1 in layer.get_weights()[0]:
@@ -120,8 +192,6 @@ class convolutionLayer2d(layerNode):
 					out.append(self.CRC2D(f2))
 			self.store[0] = np.array(out)
 			print(self.store[0])
-# TO ADD CRC
-			pass
 
 #Input Padding DONE!!!
 		if self.padded == CN.BOTH or self.padded == CN.INPUTPAD:
@@ -136,8 +206,21 @@ class convolutionLayer2d(layerNode):
 		print("	CRC:", self.CRC)
 		print('	total Cost', self.cost())
 
+# Print Summary
+		print("	padded:", self.padded)
+		print("	CRC:", self.CRC)
+		print('	total Cost', self.cost())
+
+		self.keys ={'F':F, 'Z':Z, 'M':M, 'N':N, 'Y':Y, 'yPad':yPad, 'mPad':mPad}
+		outputs = layer._convolution_op(inputData, layer.kernel)
 
 
+# Validation to be Removed
+		if skipKernel:
+			rekernel = self.backwardPass(outputs)
+			print(rekernel)
+			print(self.rawIn)
+			assert np.allclose(rekernel, self.rawIn, atol=1e-0), "backward pass recovery"
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
@@ -147,17 +230,68 @@ class convolutionLayer2d(layerNode):
 
 		return activationLayer.staticInitilizer(outputs, layer.activation, status)
 
-	def forwardPass(self, inputs):
-		layer = self.Tlayer
-		outputs = layer._convolution_op(inputs, layer.kernel)
+	def cost(self):
+		total = 0
+		if self.checkpointed:
+			cost = 1
+			for i in self.checkpointData.shape:
+				cost = cost*i
+			total = total + cost
 
-		if layer.use_bias:
-			if layer.data_format == 'channels_first':
-				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NCHW')
+		cost = 0
+		for i in self.store:
+			if i == None:
+				continue
+
+			if self.CRC == True and cost == 0:
+				for j in i:
+					for n in j:
+						hold = 1
+						for n in n.shape:
+							hold = hold * n
+						cost += hold
 			else:
-				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NHWC')
+				hold = 1
+				for j in i.shape:
+					hold = hold * j
+				cost += hold
 
-		return activationLayer.forwardPass(outputs, layer.activation)
+		total = total + cost
+
+		return total
+
+
+
+	def cost(self):
+		total = 0
+		if self.checkpointed:
+			cost = 1
+			for i in self.checkpointData.shape:
+				cost = cost*i
+			total = total + cost
+
+		cost = 0
+		for i in self.store:
+			if i == None:
+				continue
+
+			if self.CRC == True and cost == 0:
+				for j in i:
+					for n in j:
+						hold = 1
+						for n in n.shape:
+							hold = hold * n
+						cost += hold
+			else:
+				hold = 1
+				for j in i.shape:
+					hold = hold * j
+				cost += hold
+
+		total = total + cost
+
+		return total
+
 
 	def cost(self):
 		total = 0
