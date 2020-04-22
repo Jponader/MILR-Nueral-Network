@@ -80,11 +80,6 @@ class convolutionLayer2d(layerNode):
 			
 		filterMatrix = np.array(filterMatrix)
 		filterShape = filterMatrix.shape
-		print(filterShape)
-		print(outputs.shape)
-
-		print(filterMatrix[:FFZ,:FFZ].shape)
-		print(outputs[0,0,0,:FFZ].shape)
 
 		out = []
 		for i in range(M):
@@ -94,8 +89,6 @@ class convolutionLayer2d(layerNode):
 		out = np.array(out)
 		return [np.reshape(out,(M,M,Z))]
 
-
-	#To add partial checkpoint
 	def layerInitilizer(self, inputData, status):
 		# partial checkpoint
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
@@ -185,26 +178,13 @@ class convolutionLayer2d(layerNode):
 					out.append(self.CRC2D(f2))
 			self.store[0] = np.array(out)
 
-			print(type(layer.get_weights()[0]))
-			print(layer.get_weights()[0].shape)
-			for f1 in layer.get_weights()[0]:
-				for f2 in f1:
-					out.append(self.CRC2D(f2))
-			self.store[0] = np.array(out)
-			print(self.store[0])
-
-#Input Padding DONE!!!
+#Input Padding
 		if self.padded == CN.BOTH or self.padded == CN.INPUTPAD:
 			extraFilters = self.seededRandomTensor((F,F,Z,yPad))
 			extraFiltered = tf.nn.conv2d(inputData, extraFilters, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
 			self.store[1]  =extraFiltered
 
 		outputs = tf.nn.conv2d(inputData, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
-
-# Print Summary
-		print("	padded:", self.padded)
-		print("	CRC:", self.CRC)
-		print('	total Cost', self.cost())
 
 # Print Summary
 		print("	padded:", self.padded)
@@ -218,9 +198,10 @@ class convolutionLayer2d(layerNode):
 # Validation to be Removed
 		if skipKernel:
 			rekernel = self.backwardPass(outputs)
-			print(rekernel)
-			print(self.rawIn)
-			assert np.allclose(rekernel, self.rawIn, atol=1e-0), "backward pass recovery"
+			assert np.allclose(rekernel, self.rawIn, atol=1e-4), "backward pass recovery"
+
+
+		rekernel = self.kernelSolver(inputData, outputs)
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
@@ -230,37 +211,6 @@ class convolutionLayer2d(layerNode):
 
 		return activationLayer.staticInitilizer(outputs, layer.activation, status)
 
-	def cost(self):
-		total = 0
-		if self.checkpointed:
-			cost = 1
-			for i in self.checkpointData.shape:
-				cost = cost*i
-			total = total + cost
-
-		cost = 0
-		for i in self.store:
-			if i == None:
-				continue
-
-			if self.CRC == True and cost == 0:
-				for j in i:
-					for n in j:
-						hold = 1
-						for n in n.shape:
-							hold = hold * n
-						cost += hold
-			else:
-				hold = 1
-				for j in i.shape:
-					hold = hold * j
-				cost += hold
-
-		total = total + cost
-
-		return total
-
-
 
 	def cost(self):
 		total = 0
@@ -291,40 +241,6 @@ class convolutionLayer2d(layerNode):
 		total = total + cost
 
 		return total
-
-
-	def cost(self):
-		total = 0
-		if self.checkpointed:
-			cost = 1
-			for i in self.checkpointData.shape:
-				cost = cost*i
-			total = total + cost
-
-		cost = 0
-		for i in self.store:
-			if i == None:
-				continue
-
-			if self.CRC == True and cost == 0:
-				for j in i:
-					for n in j:
-						hold = 1
-						for n in n.shape:
-							hold = hold * n
-						cost += hold
-			else:
-				hold = 1
-				for j in i.shape:
-					hold = hold * j
-				cost += hold
-
-		total = total + cost
-
-		return total
-
-
-
 
 class CN(Enum):
 	NONE = -1
