@@ -34,6 +34,15 @@ class convolutionLayer2d(layerNode):
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
 		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper(), dilations=self.Tlayer.dilation_rate)[0,0,:]
 		#CheckPoint, Error
+
+		if not np.allclose(checkdata, self.partialData, atol=1e-08):
+			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
+			return self.checkpointed, True
+
+		if self.Tlayer.use_bias:
+			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
+			return self.checkpointed, self.biasError 
+
 		return self.checkpointed, not np.allclose(checkdata, self.partialData, atol=1e-08)
 
 	def forwardPass(self, inputs):
@@ -371,14 +380,15 @@ class convolutionLayer2d(layerNode):
 			assert np.allclose(rekernel, self.rawIn, atol=1e-4), "backward pass recovery"
 		"""
 		
-		biasIn = outputs
+		self.rawbiasIn = outputs
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
 				outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status, data_format='NCHW')
 			else:
 				outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status, data_format='NHWC')
-			biasLayer.kernelSolver(self, biasIn, outputs)
+			biasLayer.kernelSolver(self, self.rawbiasIn, outputs)
+			biasLayer.backwardPass(self, outputs)
 
 		return activationLayer.staticInitilizer(outputs, layer.activation, status)
 

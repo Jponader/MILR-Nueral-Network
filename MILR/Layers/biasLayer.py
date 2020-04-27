@@ -9,36 +9,35 @@ from MILR.status import status as STAT
 def forwardPass(data, bias, data_format = None):
 	return nn.bias_add(data, bias, data_format)
 
-#to be configured
 def partialCheckpoint(self):
-	check = sum(bias)
+	check = sum(self.Tlayer.get_weights()[1])
 	return False, check !=self.biasCheck
 
 def kernelSolver(self, inputs, outputs):
 	length = len(inputs.shape)
 	kern = outputs - inputs
-	print(kern.shape)
-	print(kern)
-	print(self.rawbias.shape)
-	print(self.rawbias)
+
+	for i in range(length-1):
+		kern = kern[0]
+
+	#print(kern.shape)
+	#print(kern)
+	#print(self.rawbias.shape)
+	#print(self.rawbias)
 	assert np.allclose(self.rawbias, kern, atol=1e-2),"RAW BIAS"
 
 def backwardPass(self, outputs):
-	pass
+	inputs = outputs - self.Tlayer.get_weights()[1]
+	assert np.allclose(inputs, self.rawbiasIn, atol=1e-2), "backwardPass"
 
 def layerInitilizer (self, data, bias, status, data_format = None):
-	#print(bias)
-	#print(bias.shape)
-	self.biasCheck = sum(bias)
-	self.rawbias = bias
-	print(self.biasCheck)
 
 	#Partial Checkpoint
-
+	self.biasCheck = sum(bias)
+	self.rawbias = bias
 
 	return nn.bias_add(data, bias, data_format), STAT.REQ_INV
 
 def cost(self):
 
-		#to add Partial Cost
-	return 0
+	return 1
