@@ -197,15 +197,21 @@ class denseLayer(layerNode):
 		print(self.Tlayer.kernel)
 		print(type(self.Tlayer.kernel))
 		"""
-		# END VALIDATION		
+		# END VALIDATION	
+
+		biasIn = outputs	
 
 		if layer.use_bias:
-			outputs, status = biasLayer.layerInitilizer(outputs, layer.bias, status)
+			outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status)
+			biasLayer.kernelSolver(self, biasIn, outputs)
 
 		return activationLayer.staticInitilizer(outputs, layer.activation, status)
 
 
 	def cost(self):
+
+
+
 		total = 0
 		if self.checkpointed:
 			cost = 1

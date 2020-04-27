@@ -41,7 +41,7 @@ X_train /= 255
 X_test /= 255
 
 
-
+"""
 # Load Model
 #model= keras.models.load_model('model.h5')
 
@@ -50,8 +50,9 @@ num_category = 10
 y_train = keras.utils.to_categorical(y_train, num_category)
 y_test = keras.utils.to_categorical(y_test, num_category)
 
-"""
+
 inputs = keras.Input(shape=input_shape)
+#x = Conv2D(32, kernel_size=(3, 3),activation='relu', padding="SAME")(inputs)
 x = Conv2D(32, kernel_size=(3, 3),activation='relu')(inputs)
 x = Conv2D(64, (3, 3), activation='relu')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
@@ -67,7 +68,7 @@ model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-model.fit(X_train, y_train, epochs=10, batch_size = 128)
+model.fit(X_train, y_train, epochs=2, batch_size = 128)
 
 
 test_loss, test_acc = model.evaluate(X_test, y_test)
@@ -79,7 +80,6 @@ model.save_weights('weights.h5')
 
 # Save Entire Model
 model.save('model.h5')
-
 """
 model= keras.models.load_model('model.h5')
 
