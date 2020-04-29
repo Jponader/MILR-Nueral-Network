@@ -41,7 +41,7 @@ X_train /= 255
 X_test /= 255
 
 
-"""
+
 # Load Model
 #model= keras.models.load_model('model.h5')
 
@@ -50,7 +50,7 @@ num_category = 10
 y_train = keras.utils.to_categorical(y_train, num_category)
 y_test = keras.utils.to_categorical(y_test, num_category)
 
-
+"""
 inputs = keras.Input(shape=input_shape)
 #x = Conv2D(32, kernel_size=(3, 3),activation='relu', padding="SAME")(inputs)
 x = Conv2D(32, kernel_size=(3, 3),activation='relu')(inputs)
@@ -86,3 +86,5 @@ model= keras.models.load_model('model.h5')
 #model.summary()
 
 milr = MILR(model)
+
+milr.error_Sim(20, 1E-5, baseModel = model, TestingData =(X_test, y_test) )

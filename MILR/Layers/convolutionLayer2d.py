@@ -29,21 +29,29 @@ class convolutionLayer2d(layerNode):
 		#self.hasBias = config['use_bias']
 		#self.activationFunc = config['activation']
 		
+	"""
+	def getWeights(self):
+		return self.Tlayer.get_weights()
+
+	def getWeights(self, weight):
+		self.Tlayer.set_weights()
+	"""
 
 	def partialCheckpoint(self):
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
 		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper(), dilations=self.Tlayer.dilation_rate)[0,0,:]
-		#CheckPoint, Error
+		layerError = not np.allclose(checkdata, self.partialData, atol=1e-08)
 
-		if not np.allclose(checkdata, self.partialData, atol=1e-08):
-			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
-			return self.checkpointed, True
+		print("layer-  ", layerError)
 
 		if self.Tlayer.use_bias:
 			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
-			return self.checkpointed, self.biasError 
 
-		return self.checkpointed, not np.allclose(checkdata, self.partialData, atol=1e-08)
+			print("bias-   ",self.biasError)
+
+		assert not (layerError == True and self.biasError == True), "Bias and layer Error"
+
+		return self.checkpointed, layerError or self.biasError
 
 	def forwardPass(self, inputs):
 		layer = self.Tlayer
@@ -60,6 +68,16 @@ class convolutionLayer2d(layerNode):
 	def kernelSolver(self, inputs, outputs):
 		#self.keys ={'F':F, 'Z':Z, 'M':M, 'N':N, 'Y':Y, 'yPad':yPad, 'mPad':mPad}
 
+		ogWeights = self.Tlayer.get_weights()
+
+		if self.Tlayer.use_bias:
+			if self.biasError:
+				ogWeights[1] = biasLayer.kernelSolver(self, inputs, outputs)
+				self.Tlayer.set_weights(ogWeights)
+				return
+		
+			outputs = biasLayer.backwardPass(self, outputs, data_format = self.Tlayer.data_format)
+
 		M = self.keys['M']
 		Z = self.keys['Z']
 		F = self.keys['F']
@@ -73,17 +91,7 @@ class convolutionLayer2d(layerNode):
 		#CRC Solving
 		if self.CRC:
 			weightCopy = self.Tlayer.get_weights()[0]
-			#weightCopy = weightCopy[:]
-		#VALIDATION INSERT ERRORS
-			print(weightCopy.shape)
-			weightCopy[0][0][0][0] = 1
-			weightCopy[2][1][0][2] = weightCopy[0][0][0][0]*-1
-			weightCopy[0][2][0][1] = weightCopy[0][0][0][0]*-1
-			weightCopy[2][0][0][0] = weightCopy[0][0][0][0]*-1
-			weightCopy[0][1][0][0] = 2
-			weightCopy[0][1][0][0] = 3
-
-
+	
 			checkCRC = []
 			for f1 in weightCopy:
 				for f2 in f1:
@@ -151,11 +159,13 @@ class convolutionLayer2d(layerNode):
 
 
 
-			assert np.allclose(np.array(self.Tlayer.get_weights()[0]), weightCopy, atol=1e-2), "Kernel CRC not the same"
+			#assert np.allclose(np.array(self.Tlayer.get_weights()[0]), weightCopy, atol=1e-2), "Kernel CRC not the same"
 
+			ogWeights[0] = weightCopy
+			self.Tlayer.set_weights(ogWeights)
 			return
 
-		# Take into consideration additional data being stored, for layers that done meet the requirments
+# Take into consideration additional data being stored, for layers that done meet the requirments
 		inputs = inputs[0]
 		if self.Tlayer.padding.upper() == "SAME":
 			padding = (((N-1)*S)+F-N)
@@ -185,15 +195,13 @@ class convolutionLayer2d(layerNode):
 					(I[2+(i*S)][0+(j*S)]*k[2][0])+(I[2+(i*S)][1+(j*S)]*k[2][1])+(I[2+(i*S)][2+(j*S)]*k[2][2]))
 				subSol.append(np.sum(ConvTotal))
 				"""
-
-
 #theoretical solution to be tested
 		inputMatrix = np.array(inputMatrix)
 		outputs = testOut = np.array(outputs[0])
 		outputs = np.reshape(outputs,(N*N,Y))
 
-		print(inputMatrix.shape)
-		print(outputs.shape)
+		#print(inputMatrix.shape)
+		#print(outputs.shape)
 
 		#testSol = np.reshape(scipy.linalg.solve( inputMatrix[:FFZ].astype('float64'), outputs[:FFZ,:].astype('float64')*1000000),(F,F,Z,Y))/1000000
 		#testSol = scipy.linalg.lstsq( inputMatrix.astype('float64'), outputs.astype('float64'))[0]
@@ -205,6 +213,11 @@ class convolutionLayer2d(layerNode):
 
 		testSol = np.reshape(testSol,(F,F,Z,Y))
 
+		ogWeights[0] = testSol
+		self.Tlayer.set_weights(ogWeights)
+		return
+
+		"""
 		print("++++++")
 		print(testSol)
 		print("+***+")
@@ -214,9 +227,18 @@ class convolutionLayer2d(layerNode):
 		assert np.allclose(self.rawOut, checkOut, atol=1e-4), "Kernel Check Output not the same"
 
 		assert np.allclose(testSol, self.Tlayer.get_weights()[0], atol=1e-4), "Kernel not the same"
-
+		"""
 
 	def backwardPass(self, outputs):
+		layer = self.Tlayer
+
+		if self.checkpointed:
+			return self.checkpointData
+
+		if layer.use_bias:
+			outputs = biasLayer.backwardPass(self, outputs, data_format = layer.data_format)
+
+
 		#self.keys ={'F':F, 'Z':Z, 'M':M, 'N':N, 'Y':Y, 'yPad':yPad, 'mPad':mPad}
 		F = self.keys['F']
 		Z = self.keys['Z']
@@ -225,11 +247,6 @@ class convolutionLayer2d(layerNode):
 		Y = self.keys['Y']
 		yPad = self.keys['yPad']
 		FFZ = F*F*Z
-
-		layer = self.Tlayer
-
-		if self.checkpointed:
-			return self.checkpointData
 
 		filterMatrix = []
 		for filters in np.array(layer.get_weights()[0]).T:
@@ -387,8 +404,8 @@ class convolutionLayer2d(layerNode):
 				outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status, data_format='NCHW')
 			else:
 				outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status, data_format='NHWC')
-			biasLayer.kernelSolver(self, self.rawbiasIn, outputs)
-			biasLayer.backwardPass(self, outputs)
+			#biasLayer.kernelSolver(self, self.rawbiasIn, outputs)
+			#biasLayer.backwardPass(self, outputs, data_format = layer.data_format)
 
 		return activationLayer.staticInitilizer(outputs, layer.activation, status)
 

@@ -10,3 +10,6 @@ class flattenLayer(layerNode):
 
 	def __init__(self, layer, prev = None, next = None):
 		super(flattenLayer,self).__init__(layer, prev = prev, next = next)
+
+	def backwardPass(self, outputs):
+		return np.reshape(outputs, (1,self.Tlayer.input_shape[1:]))

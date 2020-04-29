@@ -34,6 +34,12 @@ class layerNode:
 		#CheckPoint, Error
 		return self.checkpointed,False
 
+	def forwardPass(self, inputs):
+		return self.Tlayer.call(inputs)
+
+	def backwardPass(self, outputs):
+		return outputs
+
 	def initilize(self, status = STAT.START, inputData = None):
 		if status == STAT.START:
 			assert self.inputLayer, ("ERROR :Not Start Layer")
@@ -66,6 +72,21 @@ class layerNode:
 		for i in inputs.shape:
 			cost = cost*i
 		print('	checkpoint: ',inputs.shape, cost)
+
+	def getCheckpoint(self):
+		if self.inputLayer:
+			return self.startMetadata()
+
+		if self.checkpointed:
+			return self.checkpointData 
+
+		assert False, "Not Checkpoint or Input Layer"
+
+	def getWeights(self):
+		return self.Tlayer.get_weights()
+
+	def setWeights(self, weight):
+		self.Tlayer.set_weights(weight)
 
 	def seeder(self):
 		if self.seed == None:
@@ -118,7 +139,6 @@ class layerNode:
 		return 0
 
 	def startMetadata(self):
-		self.checkpoint = True
 		np.random.seed(self.seeder())
 		return tf.convert_to_tensor(np.random.rand(1,*self.inputSize[0][1:]),  dtype= self.dtype)
 

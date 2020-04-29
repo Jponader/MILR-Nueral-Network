@@ -11,6 +11,10 @@ import MILR.Layers as M
 from MILR.status import status as STAT
 from tensorflow.python.keras.layers.normalization import BatchNormalization
 
+# error Sim
+from random import random, seed
+import struct
+
 class MILR:
 
 	# model -> original model of network
@@ -30,22 +34,127 @@ class MILR:
 		#self.print(self.milrHead)
 		#self.reverseprint(self.milrModel[-1])
 		#self.splitprint(self.milrHead)
-		del self.model
+		self.model
 		self.initalize()
-
-		self.scrubbing()
 
 	def initalize(self):
 		self.milrHead.initilize()
 
+	#Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
+	def error_Sim(self,rounds, error_Rate, baseModel = None, TestingData = None):
+		seed()
+		test = self.model.evaluate(*TestingData)
+		print("Basline Accuracy:", test)
+		# Create copy of OG model
+		# Compare the actual weights and performance
+
+		for z in range(1,rounds+1):
+			errorCount = 0
+			for layer in self.milrModel:
+				layerErrorCount = 0
+				weights = layer.getWeights()
+				if weights is not None:
+					#print("pre",weights)
+					for j in range(len(weights)):
+						sets = np.array(weights[j])
+						setspre = sets[:]
+						shape = sets.shape
+						sets  = sets.flatten()
+						for i in range(len(sets)):
+							hold = sets[i]
+							error, sets[i] = self.floatError(error_Rate, sets[i])
+							if error:
+								errorCount += 1
+								layerErrorCount+=1
+							#print(hold, sets[i])
+						sets = np.reshape(sets, shape)
+						weights[j] = sets
+				layer.setWeights(weights)
+				print(layer, layerErrorCount)
+			print(errorCount)
+
+			if TestingData is not None:
+				test = self.model.evaluate(*TestingData)
+				print("Pre Scrubbing Round {} , Acurracyr".format(z),test)
+
+			error = self.scrubbing()
+
+			if error:
+				print("Errors in round: ", z)
+
+			#Accuracy test
+			if TestingData is not None:
+				test = self.model.evaluate(*TestingData)
+				print("Round {} , Acurracyr".format(z),test)
+
 	def scrubbing(self):
 		print("Start scrubbing")
-		for layer in self.milrModel:
-			check, error = layer.partialCheckpoint()
+
+		errorFlag = False
+		errorFlagLoc = 0
+		erroLog = []
+		checkMark = 0
+
+		for i in range(len(self.milrModel)):
+			check, error = self.milrModel[i].partialCheckpoint()
+
+			if check:
+				if errorFlag:
+					erroLog.append((checkMark,errorFlagLoc, i))
+				checkMark = i
+				errorFlag = False
+
 			if error:
-				print("error:", layer)
+				print("error:", self.milrModel[i])
+				assert not errorFlag, "Two Errors between checkpoints"
+				errorFlag = True
+				errorFlagLoc = i
+
+		print(erroLog)
+		
+		for log in erroLog:
+			inputs = self.milrModel[log[0]].getCheckpoint()
+			for i in range(log[0],log[1]):
+				#begin to error
+				inputs = self.milrModel[i].forwardPass(inputs)
+
+			outputs = self.milrModel[log[2]].getCheckpoint()
+			for i in range(log[2]-1, log[1], -1):
+				outputs = self.milrModel[i].backwardPass(outputs)
+
+			self.milrModel[log[1]].kernelSolver(inputs, outputs)
 
 		print("scrubbing complete")
+		return len(erroLog) > 0
+
+		
+
+	def floatError(self, error_Rate, num):
+		error = int(0)
+		for i in range(31):
+			if random() < error_Rate:
+				error = error + 1
+			error = error << 1
+
+		
+		if error > 0:
+			num = self.floatToBits(num)
+			#print(num, bin(error))
+			num = num ^ error
+			#print(num)
+			return error > 0, self.bitsToFloat(num)
+		else:
+			return False, num
+
+
+	def floatToBits(self, f):
+		s = struct.pack('>f', f)
+		return struct.unpack('>I', s)[0]
+
+	def bitsToFloat(self, b):
+		s = struct.pack('>I', b)
+		return struct.unpack('>f', s)[0]
+
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']

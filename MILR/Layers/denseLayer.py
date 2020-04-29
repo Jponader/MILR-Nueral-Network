@@ -32,8 +32,18 @@ class denseLayer(layerNode):
 	def partialCheckpoint(self):
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
 		checkdata  = gen_math_ops.mat_mul(partailInput, self.Tlayer.kernel)[0,:]
-		#CheckPoint, Error
-		return self.checkpointed, not np.allclose(checkdata, self.partialData, atol=1e-08)
+		layerError = not np.allclose(checkdata, self.partialData, atol=1e-08)
+
+		print("layer-  ", layerError)
+
+		if self.Tlayer.use_bias:
+			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
+
+			print("bias-   ",self.biasError)
+
+		assert not (layerError == True and self.biasError ==True), "Bias and layer Error"
+
+		return self.checkpointed, layerError or self.biasError
 
 	def forwardPass(self, inputs):
 		inputs = math_ops.cast(inputs, self.Tlayer._compute_dtype)
@@ -44,7 +54,18 @@ class denseLayer(layerNode):
 		return activationLayer.forwardPass(outputs, layer.activation)
 
 	def kernelSolver(self, inputs, outputs):
-		assert self.store is not None, "Nothing Stored"
+
+		ogWeights = self.Tlayer.get_weights()
+
+
+		if self.Tlayer.use_bias:
+			if self.biasError:
+				ogWeights[1] = biasLayer.kernelSolver(self, inputs, outputs)
+				self.Tlayer.set_weights(ogWeights)
+				self.biasError = False
+				return
+
+			outputs = biasLayer.backwardPass(self, outputs)
 
 		m = self.keys['M']
 		n = self.keys['N']
@@ -56,19 +77,26 @@ class denseLayer(layerNode):
 			inputs = tf.concat([inputs, self.seededRandomTensor((mPad-m,n))],0)
 			outputs = tf.concat([outputs,self.store[0]], 0)
 
-		assert np.allclose(self.manIn, inputs,  atol=1e-08), "Input differs after padding"
-		assert np.allclose(self.manOut, outputs,  atol=1e-08), "Output differs after padding"
+		#assert np.allclose(self.manIn, inputs,  atol=1e-08), "Input differs after padding"
+		#assert np.allclose(self.manOut, outputs,  atol=1e-08), "Output differs after padding"
 
-		return tf.linalg.solve( inputs, outputs, adjoint=False, name=None)
+		#return tf.linalg.solve( inputs, outputs, adjoint=False, name=None)
 		#linalg.lstsq(inputs, outputs, fast=False)
 		#return np.linalg.lstsq(inputs, outputs,rcond=-1)[0]
 		#return  np.linalg.solve(inputs,outputs)
 		#return linalg.solve(inputs, outputs)
+
+		ogWeights[0] = tf.linalg.solve( inputs, outputs, adjoint=False, name=None)
+		self.Tlayer.set_weights(ogWeights)
+		return
 		
 
 	def backwardPass(self, outputs):
 		if self.checkpointed:
 			return self.checkpointData
+
+		if layer.use_bias:
+			outputs = biasLayer.backwardPass(self, outputs, data_format = layer.data_format)
 
 		assert self.padded == DN.INPUTPAD, "Non inputPad trying to recover Input"
 		assert self.store is not None, "Nothing Stored"
