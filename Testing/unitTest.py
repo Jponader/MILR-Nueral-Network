@@ -16,8 +16,7 @@ import numpy as np
 def defualtModel():
 	model= keras.models.load_model('CNN_MNIST/model.h5')
 	model.summary()
-	milr = MILR(model)
-	return milr
+	return model
 
 def addLayerTesting():
 	inputs = keras.Input(shape=(4,4))
@@ -122,7 +121,59 @@ def padding4D():
 def denseLayerValidation():
 	pass
 
+def backwardConv(layer):
+	#print(layer)
+
+	M = 28
+
+	F = 4
+	Z = 2
+	N = 26
+	Y = 32
+	FFZ = F*F*Z
+	stride = 1
+
+	weights = tf.convert_to_tensor(np.random.rand(F,F,Z,Y),  dtype= 'float32')
+	inputs = tf.convert_to_tensor(np.random.rand(1,M,M,Z),  dtype= 'float32')
+	outputs = tf.nn.conv2d(inputs, weights, stride, layer.padding.upper())
+	print("Out Shape",outputs.shape)
+	N = outputs.shape[1]
+
+
+	filterMatrix = []
+	outMatrix = []
+	weights = np.array(weights)
+	outputs = np.array(outputs)
+	for i in range(Y):
+		filterMatrix.append(weights[:,:,:,i].flatten())
+		outMatrix.append(outputs[0,:,:,i].flatten())
+
+		
+	filterMatrix = np.array(filterMatrix)
+	outMatrix = np.array(outMatrix)
+
+	out = []
+
+	for i in range(N):
+		for j in range(N):
+			#print(filterMatrix.shape)
+			#print(outputs[0,i,j,:].shape)
+			out.append(np.reshape(np.linalg.solve(filterMatrix,outputs[0,i,j,:]),(F,F,Z)))
+
+	inMat = np.zeros((M,M,Z))
+
+	for i in range(0,M-F+1,stride):
+		for j in range(0,M-F+1,stride):
+			#print([i,i+F, j,j+F])
+			inMat[i:i+F, j:j+F] = out[i*(M-F+1) + j]
+
+
+	assert np.allclose(inMat, inputs, atol=1e-03), "WRONG"
+
+
 def main():
+	model = defualtModel()
+	backwardConv(model.layers[2])
 
 
 if __name__ == '__main__':

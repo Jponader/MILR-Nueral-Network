@@ -87,4 +87,4 @@ model= keras.models.load_model('model.h5')
 
 milr = MILR(model)
 
-milr.error_Sim(20, 1E-5, baseModel = model, TestingData =(X_test, y_test) )
+#milr.error_Sim(20, 1E-5, baseModel = model, TestingData =(X_test, y_test) )

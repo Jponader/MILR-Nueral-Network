@@ -229,6 +229,11 @@ class convolutionLayer2d(layerNode):
 		assert np.allclose(testSol, self.Tlayer.get_weights()[0], atol=1e-4), "Kernel not the same"
 		"""
 
+#What about padding on passes
+#Might not have encountered yet but important to consider
+
+#SAME PADDING
+	#Insert weights sets where some are Zeros
 	def backwardPass(self, outputs):
 		layer = self.Tlayer
 
@@ -248,31 +253,40 @@ class convolutionLayer2d(layerNode):
 		yPad = self.keys['yPad']
 		FFZ = F*F*Z
 
+		stride = layer.strides
+
 		filterMatrix = []
-		for filters in np.array(layer.get_weights()[0]).T:
-			filterMatrix.append(filters.flatten())
+		weights = np.array(layer.get_weights()[0])
+		outputs = np.array(outputs)
+		for i in range(Y):
+			filterMatrix.append(weights[:,:,:,i].flatten())
 
 		if self.padded == CN.INPUTPAD or self.padded == CN.BOTH:
 			for filters in np.array(self.seededRandomTensor((F,F,Z,yPad))).T:
 				filterMatrix.append(filters.flatten())
 
 			outputs = tf.concat([outputs, self.store[1]], 3)
+
 			
 		filterMatrix = np.array(filterMatrix)
-		filterShape = filterMatrix.shape
+		outMatrix = np.array(outMatrix)
 
-		
 		out = []
-		for i in range(M):
-			for j in range(M):
-				print(filterMatrix[:FFZ,:FFZ].shape)
-				print(outputs[0,i,j,:FFZ].shape)
-				out.append(np.linalg.solve(filterMatrix[:FFZ,:FFZ],outputs[0,i,j,:FFZ]))
-		
-		#Possible simplification?????
-		#out = (np.linalg.solve(filterMatrix[:FFZ,:FFZ],np.reshape(outputs[0],(N*N,Y))[:,:FFZ]))
-		out = np.array(out)
-		return [np.reshape(out,(M,M,Z))]
+
+		for i in range(N):
+			for j in range(N):
+				#print(filterMatrix.shape)
+				#print(outputs[0,i,j,:].shape)
+				out.append(np.reshape(np.linalg.solve(filterMatrix,outputs[0,i,j,:]),(F,F,Z)))
+
+		inMat = np.zeros((M,M,Z))
+
+		for i in range(0,M-F+1,stride):
+			for j in range(0,M-F+1,stride):
+				#print([i,i+F, j,j+F])
+				inMat[i:i+F, j:j+F] = out[i*(M-F+1) + j]
+
+		return inMat
 
 	def layerInitilizer(self, inputData, status):
 		# partial checkpoint
@@ -346,8 +360,7 @@ class convolutionLayer2d(layerNode):
 				self.padded = CN.BOTH
 			else:
 				self.padded = CN.INPUTPAD
-		
-
+	
 
 # Weight Padding and CRC
 		if self.padded == CN.BOTH or self.padded == CN.WEIGHTPAD:
@@ -389,13 +402,11 @@ class convolutionLayer2d(layerNode):
 		#Accuracy is low, finds place it doenst work
 		#rekernel = self.kernelSolver(self.rawIn, self.rawOut)
 
+		#if skipKernel:
+			#rekernel = self.backwardPass(outputs)
+			#assert np.allclose(rekernel, self.rawIn, atol=1e-4), "backward pass recovery"
+			#print("Backward Pass Completed")
 
-	#To Re-check/do
-		"""
-		if skipKernel:
-			rekernel = self.backwardPass(outputs)
-			assert np.allclose(rekernel, self.rawIn, atol=1e-4), "backward pass recovery"
-		"""
 		
 		self.rawbiasIn = outputs
 
