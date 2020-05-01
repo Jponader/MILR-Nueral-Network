@@ -22,13 +22,10 @@ class layerNode:
 		self.inputLayer = False
 		self.checkpointed = False
 		self.seed = None
-
-		#These may be remoavable
 		self.name = layer.name
 
 	def __str__(self):
 		return self.name 
-		#+ " Next " + str(len(self.next)) + " Prev " + str(len(self.prev))
 
 	def partialCheckpoint(self):
 		#CheckPoint, Error

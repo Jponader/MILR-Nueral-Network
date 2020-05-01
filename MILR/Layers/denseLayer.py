@@ -23,11 +23,6 @@ class denseLayer(layerNode):
 
 	def __init__(self, layer, prev = None, next = None):
 		super(denseLayer,self).__init__(layer, prev = prev, next = next)
-		#config = layer.get_config()
-		#self.units = config['units']
-		#Common
-		#self.hasBias = config['use_bias']
-		#self.activationFunc = config['activation']
 
 	def partialCheckpoint(self):
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
@@ -57,7 +52,6 @@ class denseLayer(layerNode):
 
 		ogWeights = self.Tlayer.get_weights()
 
-
 		if self.Tlayer.use_bias:
 			if self.biasError:
 				ogWeights[1] = biasLayer.kernelSolver(self, inputs, outputs)
@@ -76,15 +70,6 @@ class denseLayer(layerNode):
 		if self.padded != DN.NONE:
 			inputs = tf.concat([inputs, self.seededRandomTensor((mPad-m,n))],0)
 			outputs = tf.concat([outputs,self.store[0]], 0)
-
-		#assert np.allclose(self.manIn, inputs,  atol=1e-08), "Input differs after padding"
-		#assert np.allclose(self.manOut, outputs,  atol=1e-08), "Output differs after padding"
-
-		#return tf.linalg.solve( inputs, outputs, adjoint=False, name=None)
-		#linalg.lstsq(inputs, outputs, fast=False)
-		#return np.linalg.lstsq(inputs, outputs,rcond=-1)[0]
-		#return  np.linalg.solve(inputs,outputs)
-		#return linalg.solve(inputs, outputs)
 
 		ogWeights[0] = tf.linalg.solve( inputs, outputs, adjoint=False, name=None)
 		self.Tlayer.set_weights(ogWeights)
@@ -152,12 +137,12 @@ class denseLayer(layerNode):
 				self.checkpointed = False
 				self.padded = DN.INPUTPAD
 
-	#Does it need padding
+		#Does it need padding
 		if self.padded == DN.NONE:
 			if n > m:
 				self.padded = DN.WEIGHTPAD
 
-# Create Padding
+		# Create Padding
 		inputData = self.padder2D(inputData,mPad-m,n,0)
 		kernel = self.padder2D(layer.kernel,n, pPad - p, 1)
 
@@ -166,6 +151,7 @@ class denseLayer(layerNode):
 		self.manKernel = kernel
 		#print("	Padding out - IN - Kern", inputData.shape, kernel.shape)
 		#print("	Padding - m - p", mPad, pPad)
+#_________
 
 		inputData = math_ops.cast(inputData, self.Tlayer._compute_dtype)
 		outputs = gen_math_ops.mat_mul(inputData, kernel)
@@ -181,6 +167,7 @@ class denseLayer(layerNode):
 			outputs = outputs[:m,:p]
 		else:
 			self.store = None
+#_________
 
 		self.keys ={'M':m, 'N':n, 'P':p, 'mPad':mPad, 'pPad':pPad}
 		
@@ -225,9 +212,9 @@ class denseLayer(layerNode):
 		print(self.Tlayer.kernel)
 		print(type(self.Tlayer.kernel))
 		"""
-		# END VALIDATION	
 
-		biasIn = outputs	
+		biasIn = outputs
+#_________	
 
 		if layer.use_bias:
 			outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status)

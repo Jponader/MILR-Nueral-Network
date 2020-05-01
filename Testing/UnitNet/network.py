@@ -13,7 +13,7 @@ from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2
 from tensorflow.keras import backend as k
 
 
-input_shape = (28, 28, 1)
+input_shape = (28, 28, 5)
 
 
 
@@ -21,8 +21,8 @@ input_shape = (28, 28, 1)
 #model= keras.models.load_model('model.h5')
 
 inputs = keras.Input(shape=input_shape)
-x = Conv2D(1, kernel_size=(3, 3),activation='relu')(inputs)
-x = Conv2D(1, (3, 3), activation='relu')(x)
+x = Conv2D(32, kernel_size=(3, 3),activation='relu')(inputs)
+x = Conv2D(64, (3, 3), activation='relu')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
 x = Flatten()(x)
 x = Dense(128, activation='relu')(x)
