@@ -37,6 +37,21 @@ class layerNode:
 	def backwardPass(self, outputs):
 		return outputs
 
+	def cost(self):
+		check = 0
+		if self.checkpointed:
+			check = 1
+			for i in self.checkpointData.shape:
+				check = check*i
+
+		if self.end:
+			hold = 1
+			for i in self.outputData.shape:
+				hold = hold*i
+			check += hold
+
+		return check,0,0
+
 	def initilize(self, status = STAT.START, inputData = None):
 		if status == STAT.START:
 			assert self.inputLayer, ("ERROR :Not Start Layer")
@@ -131,9 +146,6 @@ class layerNode:
 						errorMatrix.append([col[0],r[1]])
 
 		return np.array(errorMatrix, dtype=np.int32)
-
-	def cost(self):
-		return 0
 
 	def startMetadata(self):
 		np.random.seed(self.seeder())

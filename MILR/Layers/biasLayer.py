@@ -40,4 +40,4 @@ def layerInitilizer (self, data, bias, status, data_format=None):
 
 def cost(self):
 	# Cost of partial Checkpoint
-	return 1
+	return 0, 1, 0

@@ -224,28 +224,34 @@ class denseLayer(layerNode):
 
 
 	def cost(self):
+		check, part, stored = super(denseLayer,self).cost()
 
-
-
-		total = 0
 		if self.checkpointed:
-			cost = 1
+			check = 1
 			for i in self.checkpointData.shape:
-				cost = cost*i
-			total = total + cost
+				check = check*i
 
-		cost = 0
 		for i in self.store:
 			hold = 1
 			if i == None:
 				continue
 			for j in i.shape:
 				hold = hold * j
-			cost += hold
+			stored += hold
 
-		total = total + cost
+		if self.partialData is not None:
+			hold  = 1
+			for i in self.partialData.shape:
+				hold = i * hold
+			part = hold
 
-		return total
+		if self.Tlayer.use_bias:
+			c, p, s = biasLayer.cost(self)
+			check += c
+			part += p
+			stored += s
+
+		return check, part, stored
 
 
 	def densePadding(self, m,n,p):

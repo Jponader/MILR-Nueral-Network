@@ -180,7 +180,8 @@ class convolutionLayer2d(layerNode):
 		print("______")
 		print(self.Tlayer.get_weights()[0])
 
-		assert np.allclose(sol, np.array(self.Tlayer.get_weights()[0]), atol=1e-4), "Kernel Solver Update"
+		#Validation Data to be Removed
+		#assert np.allclose(sol, np.array(self.Tlayer.get_weights()[0]), atol=1e-4), "Kernel Solver Update"
 
 		ogWeights[0] = sol
 		self.Tlayer.set_weights(ogWeights)
@@ -287,7 +288,7 @@ class convolutionLayer2d(layerNode):
 
 #Determine Padding Type and Requirments
 		
-		if FFZ > 100:
+		if FFZ > 50:
 			self.CRC = True
 		elif N*N < FFZ:
 			nPad = math.ceil(math.sqrt(FFZ-NN))
@@ -353,9 +354,9 @@ class convolutionLayer2d(layerNode):
 # Validation to be Removed
 		
 		#Accuracy is low, finds place it doenst work
-		self.biasError = False
-		rekernel = self.kernelSolver(self.rawIn, self.rawOut)
-		print("KERNEL SOLVER!!!")
+		#self.biasError = False
+		#rekernel = self.kernelSolver(self.rawIn, self.rawOut)
+		#print("KERNEL SOLVER!!!")
 
 		#if skipKernel:
 			#rekernel = self.backwardPass(outputs)
@@ -379,38 +380,37 @@ class convolutionLayer2d(layerNode):
 
 
 	def cost(self):
+		check, part, stored = super(convolutionLayer2d,self).cost()
 
-		#to add Partial Cost
-		# Break Down by Catergory: Checkpoint, Additonal Data, Partial Checkpoint
-
-		total = 0
-		if self.checkpointed:
-			cost = 1
-			for i in self.checkpointData.shape:
-				cost = cost*i
-			total = total + cost
-
-		cost = 0
 		for i in self.store:
 			if i == None:
 				continue
-
-			if self.CRC == True and cost == 0:
+			if self.CRC == True and stored == 0:
 				for j in i:
 					for n in j:
 						hold = 1
 						for n in n.shape:
 							hold = hold * n
-						cost += hold
+						stored += hold
 			else:
 				hold = 1
 				for j in i.shape:
 					hold = hold * j
-				cost += hold
+				stored += hold
 
-		total = total + cost
+		if self.partialData is not None:
+			hold  = 1
+			for i in self.partialData.shape:
+				hold = i * hold
+			part = hold
 
-		return total
+		if self.Tlayer.use_bias:
+			c, p, s = biasLayer.cost(self)
+			check += c
+			part += p
+			stored += s
+
+		return check, part, stored
 
 class CN(Enum):
 	NONE = -1

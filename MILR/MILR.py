@@ -36,6 +36,7 @@ class MILR:
 		#self.splitprint(self.milrHead)
 		self.model
 		self.initalize()
+		self.totalCost(printTotals=True, printLayers=True)
 
 	def initalize(self):
 		self.milrHead.initilize()
@@ -127,7 +128,35 @@ class MILR:
 		print("scrubbing complete")
 		return len(erroLog) > 0
 
-		
+	def totalCost(self, printTotals=False, printLayers=False):
+		checkSum = 0
+		partSum = 0
+		storedSum = 0
+
+		for layer in self.milrModel:
+			check, part, stored = layer.cost()
+
+
+			if printLayers:
+				print(layer)
+				print("	Checkpoint Cost: ", check)
+				print("	Partial Checkpoint Cost: ", part)
+				print("	Stored Additional Data: ", stored)
+				print("	Total Cost: ", check + part + stored)
+
+
+			checkSum += check
+			partSum += part
+			storedSum += stored
+		total = checkSum + partSum + storedSum
+
+		if printTotals:
+			print("Checkpoint Cost: ", checkSum)
+			print("Partial Checkpoint Cost: ", partSum)
+			print("Stored Additional Data: ", storedSum)
+			print("Total Cost: ", total)
+		return total
+
 
 	def floatError(self, error_Rate, num):
 		error = int(0)
