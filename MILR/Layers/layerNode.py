@@ -58,18 +58,19 @@ class layerNode:
 			inputData = self.startMetadata()
 			status = STAT.NO_INV
 
-		print("\n\n",self,"	", status, self.Tlayer.input_shape, self.Tlayer.output_shape)
+		print("\n\n",self,"	", status, self.Tlayer.input_shape, self.Tlayer.output_shape, self.end)
 
 		assert inputData is not None, ("ERROR : No input data for next round")
 
 		outputData, status = self.layerInitilizer(inputData, status)
-		print('	Checkpointed: ', self.checkpointed)
+		print('	Checkpointed: ', self.checkpointed, flush=True)
 		if not self.end:
 			for n in self.next:
 				n.initilize(status, inputData = outputData)
 		else:
 			#this might vary based on status and layer to be adjusted
 			self.outputData = outputData
+			print("End: ", self.end, flush = True)
 
 	# Assumptions
 		# Layers do not require checkpointing and status has no changes

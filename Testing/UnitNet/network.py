@@ -35,12 +35,12 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 # Save Weights
-model.save_weights('weights.h5')
+#model.save_weights('weights.h5')
 
 # Save Entire Model
-model.save('model.h5')
+#model.save('model.h5')
 
-model= keras.models.load_model('model.h5')
+#model= keras.models.load_model('model.h5')
 
 #model.summary()
 

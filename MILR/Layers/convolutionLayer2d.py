@@ -348,7 +348,7 @@ class convolutionLayer2d(layerNode):
 		print('	Weights: ',layer.kernel.shape)
 		print("	padded:", self.padded)
 		print("	CRC:", self.CRC)
-		print('	total Cost', self.cost())
+		#print('	total Cost', self.cost())
 #_____________
 
 # Validation to be Removed

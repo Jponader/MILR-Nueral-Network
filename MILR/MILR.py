@@ -14,6 +14,8 @@ from tensorflow.python.keras.layers.normalization import BatchNormalization
 # error Sim
 from random import random, seed
 import struct
+import time
+import os
 
 class MILR:
 
@@ -42,16 +44,23 @@ class MILR:
 		self.milrHead.initilize()
 
 	#Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
-	def error_Sim(self,rounds, error_Rate, baseModel = None, TestingData = None):
+	def continousRecoveryTest(self,rounds, error_Rate, TestingData, testNumber):
+		if not os.path.exists('data'):
+			os.makedirs('data')
+		print("data/{}-continousRecoveryTest.csv".format(testNumber))
+		fout = open(("data/{}-continousRecoveryTest.csv".format(testNumber)), "w")
+		#fout.write()
+	
 		seed()
-		test = self.model.evaluate(*TestingData)
-		print("Basline Accuracy:", test)
-		# Create copy of OG model
-		# Compare the actual weights and performance
+		baslineAcc = self.model.evaluate(*TestingData)[1]
+		print("Basline Accuracy:", baslineAcc)
 
 		for z in range(1,rounds+1):
 			errorCount = 0
-			for layer in self.milrModel:
+			errorLayers = []
+			for l in range(len(self.milrModel)):
+				layer = self.milrModel[l]
+				errorOnThisLayer = False
 				layerErrorCount = 0
 				weights = layer.getWeights()
 				if weights is not None:
@@ -62,33 +71,100 @@ class MILR:
 						shape = sets.shape
 						sets  = sets.flatten()
 						for i in range(len(sets)):
-							hold = sets[i]
 							error, sets[i] = self.floatError(error_Rate, sets[i])
 							if error:
 								errorCount += 1
 								layerErrorCount+=1
-							#print(hold, sets[i])
+								if not errorOnThisLayer:
+									errorLayers.append(l)
+									errorOnThisLayer = True
 						sets = np.reshape(sets, shape)
 						weights[j] = sets
 				layer.setWeights(weights)
 				print(layer, layerErrorCount)
 			print(errorCount)
 
-			if TestingData is not None:
-				test = self.model.evaluate(*TestingData)
-				print("Pre Scrubbing Round {} , Acurracyr".format(z),test)
+			errAcc = self.model.evaluate(*TestingData)[1]
+			print("Pre Scrubbing Round {} , Acurracyr".format(z),errAcc)
 
-			error = self.scrubbing()
+			start_time = time.time()
+			error, log = self.scrubbing(retLog = True)
+			end_time = time.time()
+			tTime =  end_time - start_time
+			print("Time: ", tTime)
+
+
+
+			if len(log) != len(errorLayers):
+				logAcc = False
+			else:
+				for l1, l2 in zip(log, errorLayers):
+					if l1[1] != l2:
+						logAcc = False
+						break
+				logAcc = True
 
 			if error:
 				print("Errors in round: ", z)
 
-			#Accuracy test
-			if TestingData is not None:
-				test = self.model.evaluate(*TestingData)
-				print("Round {} , Acurracyr".format(z),test)
+			scrubAcc = self.model.evaluate(*TestingData)[1]
+			print("Round {} , Acurracyr".format(z),scrubAcc)
 
-	def scrubbing(self):
+			fout.write("{},{},{},{},{},{},{},{},{},{},{}\n".format(error_Rate, testNumber, z , baslineAcc, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime))
+
+		fout.close()
+
+	#Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
+	def RBERefftec(self,rounds, error_Rate, TestingData):
+		if not os.path.exists('data'):
+			os.makedirs('data')
+		print("data/RBEREffect.csv")
+		fout = open(("data/RBEREffect.csv"), "w")
+		#fout.write()
+
+		rawWeights = self.model.get_weights()
+	
+		seed()
+		baslineAcc = self.model.evaluate(*TestingData)[1]
+		print("Basline Accuracy:", baslineAcc)
+
+		for rates in error_Rate:
+			for z in range(1,rounds+1):
+				self.model.set_weights(rawWeights)
+				errorCount = 0
+				errorLayers = []
+				for l in range(len(self.milrModel)):
+					layer = self.milrModel[l]
+					errorOnThisLayer = False
+					layerErrorCount = 0
+					weights = layer.getWeights()
+					if weights is not None:
+						for j in range(len(weights)):
+							sets = np.array(weights[j])
+							shape = sets.shape
+							sets  = sets.flatten()
+							for i in range(len(sets)):
+								error, sets[i] = self.floatError(rates, sets[i])
+								if error:
+									errorCount += 1
+									layerErrorCount+=1
+									errorOnThisLayer = True
+							sets = np.reshape(sets, shape)
+							weights[j] = sets
+					layer.setWeights(weights)
+					if errorOnThisLayer:
+						errorLayers.append((layer.name,layerErrorCount))
+					print(layer, layerErrorCount)
+				print(errorCount)
+
+				errAcc = self.model.evaluate(*TestingData)[1]
+				print("Error ACC Round {} , Acurracyr".format(z),errAcc)
+
+				fout.write("{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers))
+				print("{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers))
+		fout.close()
+
+	def scrubbing(self, retLog = False):
 		print("Start scrubbing")
 
 		errorFlag = False
@@ -126,6 +202,10 @@ class MILR:
 			self.milrModel[log[1]].kernelSolver(inputs, outputs)
 
 		print("scrubbing complete")
+
+		if retLog:
+			return len(erroLog) > 0, erroLog
+
 		return len(erroLog) > 0
 
 	def totalCost(self, printTotals=False, printLayers=False):
@@ -191,9 +271,9 @@ class MILR:
 		self.milrHead.setAsInputLayer()
 		self.milrModel[0] = self.milrHead
 		tail = self.makeLayer(self.model.layers[-1], None)
-		tail.isEnd()
 		self.milrModel[-1] = tail
 		self.builder(tail)
+		tail.isEnd()
 		del self.config
 		
 	def builder(self, tail):

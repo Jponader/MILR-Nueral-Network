@@ -175,14 +175,7 @@ class denseLayer(layerNode):
 #Print Summary Statistics
 		print('	Weights: ',self.Tlayer.kernel.shape)
 		print('	',self.padded)
-		cost = 0
-		for i in self.store:
-			hold = 1
-			for j in i.shape:
-				hold = hold * j
-			cost += hold
-		print('	Cost',cost)
-		print('	total Cost', self.cost())
+		#print('	total Cost', self.cost())
 
 
 		# Validatioon - TO BE REMOVED
