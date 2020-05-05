@@ -33,6 +33,7 @@ class convolutionLayer2d(layerNode):
 			print("bias-   ",self.biasError)
 
 			if layerError == True and self.biasError ==True:
+				self.biasError = False
 				doubleError = True	 	
 
 		return self.checkpointed, layerError or self.biasError, doubleError

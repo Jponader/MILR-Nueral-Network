@@ -39,6 +39,7 @@ class denseLayer(layerNode):
 			print("bias-   ",self.biasError)
 
 			if layerError == True and self.biasError ==True:
+				self.biasError = False
 				doubleError = True
 			 	
 
