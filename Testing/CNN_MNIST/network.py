@@ -90,7 +90,7 @@ milr = MILR(model)
 
 milr.RBERefftec(10, [1E-1,1E-2,1E-3,1E-4,1E-5,1E-6,1E-7,1E-8,1E-9,1E-10], (X_test, y_test))
 
-#milr.continousRecoveryTest(20, 1E-5, (X_test, y_test), 1)
+milr.continousRecoveryTest(20, 1E-5, (X_test, y_test), 1)
 #model.set_weights(secureWeights)
 #milr.continousRecoveryTest(20, 1E-6, (X_test, y_test), 2)
 #model.set_weights(secureWeights)

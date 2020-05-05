@@ -31,14 +31,18 @@ class denseLayer(layerNode):
 
 		print("layer-  ", layerError)
 
+		self.biasError = False
+		doubleError = False
+
 		if self.Tlayer.use_bias:
 			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
-
 			print("bias-   ",self.biasError)
 
-		assert not (layerError == True and self.biasError ==True), "Bias and layer Error"
+			if layerError == True and self.biasError ==True:
+				doubleError = True
+			 	
 
-		return self.checkpointed, layerError or self.biasError
+		return self.checkpointed, layerError or self.biasError, doubleError
 
 	def forwardPass(self, inputs):
 		inputs = math_ops.cast(inputs, self.Tlayer._compute_dtype)
@@ -48,32 +52,34 @@ class denseLayer(layerNode):
 
 		return activationLayer.forwardPass(outputs, layer.activation)
 
+
 	def kernelSolver(self, inputs, outputs):
 
 		ogWeights = self.Tlayer.get_weights()
 
 		if self.Tlayer.use_bias:
 			if self.biasError:
+				inputs = gen_math_ops.mat_mul(inputs, self.Tlayer.kernel)
 				ogWeights[1] = biasLayer.kernelSolver(self, inputs, outputs)
 				self.Tlayer.set_weights(ogWeights)
 				self.biasError = False
-				return
+				return 
 
 			outputs = biasLayer.backwardPass(self, outputs)
 
 		m = self.keys['M']
 		n = self.keys['N']
 		p = self.keys['P']
-
-		mPad, pPad = self.densePadding(m,n,p)
+		mPad = self.keys['mPad']
+		pPad = self.keys['pPad']
 
 		if self.padded != DN.NONE:
 			inputs = tf.concat([inputs, self.seededRandomTensor((mPad-m,n))],0)
 			outputs = tf.concat([outputs,self.store[0]], 0)
 
-		ogWeights[0] = tf.linalg.solve( inputs, outputs, adjoint=False, name=None)
+		ogWeights[0] = np.linalg.solve( inputs, outputs)
 		self.Tlayer.set_weights(ogWeights)
-		return
+		return 
 		
 
 	def backwardPass(self, outputs):
@@ -205,13 +211,13 @@ class denseLayer(layerNode):
 		print(self.Tlayer.kernel)
 		print(type(self.Tlayer.kernel))
 		"""
+		
 
 		biasIn = outputs
 #_________	
 
 		if layer.use_bias:
 			outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status)
-			biasLayer.kernelSolver(self, biasIn, outputs)
 
 		return activationLayer.staticInitilizer(outputs, layer.activation, status)
 

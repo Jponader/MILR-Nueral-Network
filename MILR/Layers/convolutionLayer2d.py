@@ -20,22 +20,26 @@ class convolutionLayer2d(layerNode):
 
 	def partialCheckpoint(self):
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
-		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper(), dilations=self.Tlayer.dilation_rate)[0,0,:]
+		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())[0,0,:]
 		layerError = not np.allclose(checkdata, self.partialData, atol=1e-08)
 
 		print(self, layerError)
 
+		self.biasError = False
+		doubleError = False
+
 		if self.Tlayer.use_bias:
 			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
-			print(self, "bias-   ",self.biasError)
+			print("bias-   ",self.biasError)
 
-		assert not (layerError == True and self.biasError == True), "Bias and layer Error"
+			if layerError == True and self.biasError ==True:
+				doubleError = True	 	
 
-		return self.checkpointed, layerError or self.biasError
+		return self.checkpointed, layerError or self.biasError, doubleError
 
 	def forwardPass(self, inputs):
 		layer = self.Tlayer
-		outputs = outputs = tf.nn.conv2d(inputData, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
+		outputs  = tf.nn.conv2d(inputData, layer.kernel, layer.strides, layer.padding.upper())
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
@@ -50,9 +54,10 @@ class convolutionLayer2d(layerNode):
 
 		if self.Tlayer.use_bias:
 			if self.biasError:
+				inputs = tf.nn.conv2d(inputs, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())
 				ogWeights[1] = biasLayer.kernelSolver(self, inputs, outputs)
 				self.Tlayer.set_weights(ogWeights)
-				return
+				return 
 		
 			outputs = biasLayer.backwardPass(self, outputs, data_format = self.Tlayer.data_format)
 
@@ -77,8 +82,6 @@ class convolutionLayer2d(layerNode):
 			loc = []
 			for data1, data2 in zip(checkCRC, self.store[0]):
 				loc.append(self.CRC2dErrorFinder(data1,data2))
-
-			print("ERRORS",loc)
 			
 			varCount = np.zeros(Y, dtype=np.int32)
 			ep = []
@@ -102,33 +105,20 @@ class convolutionLayer2d(layerNode):
 				for j in range(varCount[i]):
 					local = []
 					for k in range(varCount[i]):
-						print(i,j,k)
-						print(ep[i][k])
-						print(int(math.floor((j*S))/N) + ep[i][k][0])
-						print((j*S)%N + ep[i][k][1])
-						print(ep[i][k][2])
-
 						local.append(inputs[0][int(math.floor((j*S))/N) + ep[i][k][0]]   [(j*S)%N + ep[i][k][1]]  [ep[i][k][2]])
 					answers.append(local)
-
-				print("begin",np.array(answers).shape)
-				print("begin",np.array(answers))
-				print(outputs[0,:,:,i].flatten()[:varCount[i]].shape)
-				print(outputs[0,:,:,i].flatten()[:varCount[i]])
 				
 				#sol = np.linalg.solve(np.array(answers),outputs[0][:,:,i].flatten()[:varCount[i]])
 			
 				sol = np.linalg.lstsq(np.array(answers),outputs[0][:,:,i].flatten()[:varCount[i]], rcond=-1)[0]
 
 				for j in range(varCount[i]):
-					print(self.Tlayer.get_weights()[0][ep[i][j][0]][ep[i][j][1]][ep[i][j][2]][i], "-----", sol[j])
 					weightCopy[ep[i][j][0]][ep[i][j][1]][ep[i][j][2]][i] = sol[j]
 
 			#assert np.allclose(np.array(self.Tlayer.get_weights()[0]), weightCopy, atol=1e-2), "Kernel CRC not the same"
-
 			ogWeights[0] = weightCopy
 			self.Tlayer.set_weights(ogWeights)
-			return
+			return 
 	#NON-CRC
 # Take into consideration additional data being stored, for layers that done meet the requirments
 		inputs = inputs[0]
@@ -168,24 +158,15 @@ class convolutionLayer2d(layerNode):
 			outputs = np.concatenate((outputs,copyOut))
 
 		inputMatrix = np.array(inputMatrix)
-
-		print(inputMatrix.shape)
-		print(outputs.shape)
-
 		sol = np.linalg.lstsq(inputMatrix, outputs, rcond=-1)[0]
 		sol = np.reshape(sol,(F,F,Z,Y))
-
-
-		print(sol)
-		print("______")
-		print(self.Tlayer.get_weights()[0])
 
 		#Validation Data to be Removed
 		#assert np.allclose(sol, np.array(self.Tlayer.get_weights()[0]), atol=1e-4), "Kernel Solver Update"
 
 		ogWeights[0] = sol
 		self.Tlayer.set_weights(ogWeights)
-		return
+		return True
 
 #SAME PADDING
 	#Insert weights sets where some are Zeros
@@ -244,17 +225,17 @@ class convolutionLayer2d(layerNode):
 		layer = self.Tlayer
 
 		partailInput = self.seededRandomTensor((1,*layer.input_shape[1:]))
-		self.partialData = tf.nn.conv2d(partailInput, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)[0,0,:]
+		self.partialData = tf.nn.conv2d(partailInput, layer.kernel, layer.strides, layer.padding.upper())[0,0,:]
 
 #Validation Data to be Removed
-		if status == STAT.NO_INV:
-			skipKernel = False
-		else:
-			skipKernel = True
+		#if status == STAT.NO_INV:
+		#	skipKernel = False
+		#else:
+		#	skipKernel = True
 
-		self.rawIn = inputData
-		self.rawKernel = self.Tlayer.kernel
-		self.rawOut = tf.nn.conv2d(inputData, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper(), dilations=self.Tlayer.dilation_rate)
+		#self.rawIn = inputData
+		#self.rawKernel = self.Tlayer.kernel
+		#self.rawOut = tf.nn.conv2d(inputData, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())
 #_____________
 
 		layer = self.Tlayer
@@ -328,7 +309,7 @@ class convolutionLayer2d(layerNode):
 				mPad = ((nPad -1)*layer.strides[0]) + F
  
 			newInput = self.seededRandomTensor((1,mPad,mPad,Z))
-			self.store[0] = tf.nn.conv2d(newInput, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
+			self.store[0] = tf.nn.conv2d(newInput, layer.kernel, layer.strides, layer.padding.upper())
 		elif self.CRC:
 			out = []
 			for f1 in layer.get_weights()[0]:
@@ -339,9 +320,9 @@ class convolutionLayer2d(layerNode):
 		# Input Padding
 		if self.padded == CN.BOTH or self.padded == CN.INPUTPAD:
 			extraFilters = self.seededRandomTensor((F,F,Z,yPad))
-			self.store[1] = tf.nn.conv2d(inputData, extraFilters, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
+			self.store[1] = tf.nn.conv2d(inputData, extraFilters, layer.strides, layer.padding.upper())
 
-		outputs = tf.nn.conv2d(inputData, layer.kernel, layer.strides, layer.padding.upper(), dilations=layer.dilation_rate)
+		outputs = tf.nn.conv2d(inputData, layer.kernel, layer.strides, layer.padding.upper())
 		self.keys ={'F':F, 'Z':Z, 'M':M, 'N':N, 'Y':Y, 'yPad':yPad, 'mPad':mPad}
 
 # Print Summary

@@ -29,7 +29,7 @@ class layerNode:
 
 	def partialCheckpoint(self):
 		#CheckPoint, Error
-		return self.checkpointed,False
+		return self.checkpointed,False, False
 
 	def forwardPass(self, inputs):
 		return self.Tlayer.call(inputs)
