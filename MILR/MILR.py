@@ -172,6 +172,8 @@ class MILR:
 		erroLog = []
 		checkMark = 0
 
+		# Error Identifier
+
 		for i in range(len(self.milrModel)):
 			check, error = self.milrModel[i].partialCheckpoint()
 
@@ -187,18 +189,31 @@ class MILR:
 				errorFlag = True
 				errorFlagLoc = i
 
+		#if errorFlag:
+			#erroLog.append((checkMark,errorFlagLoc, -1))
+		erroLog.append((checkMark,len(self.milrModel)-1, -1))
+
 		print(erroLog)
+
+		# Error Solving
 		
 		for log in erroLog:
+
 			inputs = self.milrModel[log[0]].getCheckpoint()
 			for i in range(log[0],log[1]):
 				#begin to error
 				inputs = self.milrModel[i].forwardPass(inputs)
 
-			outputs = self.milrModel[log[2]].getCheckpoint()
-			for i in range(log[2]-1, log[1], -1):
-				outputs = self.milrModel[i].backwardPass(outputs)
+			if log[2] == -1:
+				outputs = self.milrModel[-1].outputData
+				for i in range(len(self.milrModel)-1, log[1], -1):
+					outputs = self.milrModel[i].backwardPass(outputs)
+			else:
+				outputs = self.milrModel[log[2]].getCheckpoint()
+				for i in range(log[2]-1, log[1], -1):
+					outputs = self.milrModel[i].backwardPass(outputs)
 
+			print("Recovered ", self.milrModel[log[1]])
 			self.milrModel[log[1]].kernelSolver(inputs, outputs)
 
 		print("scrubbing complete")
