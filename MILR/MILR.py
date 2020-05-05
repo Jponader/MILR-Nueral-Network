@@ -39,6 +39,7 @@ class MILR:
 		self.model
 		self.initalize()
 		self.totalCost(printTotals=True, printLayers=True)
+		#self.sequential = True
 
 	def initalize(self):
 		self.milrHead.initilize()
@@ -163,9 +164,18 @@ class MILR:
 				fout.write("{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers))
 				print("{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers))
 		fout.close()
+	"""
+	def nonSeqScrubbing(self, retLog=False):
+		erroLog = []
+
+		self.milrHead.nonSeqScrubbing(erroLog)
+	"""
 
 	def scrubbing(self, retLog = False):
 		print("Start scrubbing")
+
+		#if not self.sequential:
+			#return self.nonSeqScrubbing(retLog = retLog)
 
 		errorFlag = False
 		errorFlagLoc = 0
@@ -339,6 +349,7 @@ class MILR:
 			return M.activationLayer(layers,next = next)
 
 		elif t == L.Add:
+			#self.sequential = False
 			return M.addLayer(layers,next = next)
 
 		elif t == L.ZeroPadding2D:

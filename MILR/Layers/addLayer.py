@@ -17,6 +17,8 @@ class addLayer(layerNode):
 			assert inputData is not None, ("ERROR : No input data for next round")
 
 			outputData, status = self.layerInitilizer(self.inputData, status)
+
+			self.inputData = []
 			if not self.end:
 				for n in self.next:
 					n.initilize(status, inputData = outputData)
@@ -29,5 +31,17 @@ class addLayer(layerNode):
 			return True
 		else:
 			return False
+"""
+	def nonSeqForwardPass(self, inputs):
+		self.inputData.append(inputData)
+		if self.canStartInilize():
+			results =  self.Tlayer.call(self.inputData)
+			self.inputData = []
+			if not self.end:
+				for n in self.next:
+					n.nonSeqForwardPass(results)
 
+	def nonSeqBackwardPass(self, outputs):
+		return outputs
+"""
 
