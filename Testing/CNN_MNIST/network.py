@@ -52,13 +52,14 @@ y_test = keras.utils.to_categorical(y_test, num_category)
 
 """
 inputs = keras.Input(shape=input_shape)
-#x = Conv2D(32, kernel_size=(3, 3),activation='relu', padding="SAME")(inputs)
-x = Conv2D(32, kernel_size=(3, 3),activation='relu')(inputs)
-x = Conv2D(64, (3, 3), activation='relu')(x)
+x = Conv2D(32, (3, 3),activation='relu')(inputs)
+x = Conv2D(32, (3, 3), activation='relu')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
+x = Conv2D(64, (3, 3),activation='relu')(x)
+x = Conv2D(64, (3, 3), activation='relu')(x)
 x = Dropout(0.25)(x)
 x = Flatten()(x)
-x = Dense(128, activation='relu')(x)
+x = Dense(256, activation='relu')(x)
 x = Dropout(0.5)(x)
 output = Dense(num_category, activation='softmax')(x)
 
@@ -68,7 +69,7 @@ model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-model.fit(X_train, y_train, epochs=2, batch_size = 128)
+model.fit(X_train, y_train, epochs=5, batch_size = 128)
 
 
 test_loss, test_acc = model.evaluate(X_test, y_test)
@@ -94,14 +95,15 @@ secureWeights = model.get_weights()
 #model.summary()
 
 milr = MILR(model)
+model.summary()
 
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-# milr.RBERefftec(10, [1E-1,1E-2,1E-3,1E-4,1E-5,1E-6,1E-7,1E-8,1E-9,1E-10], testingFunction,(X_test, y_test), 1)
-milr.RBERefftec(2, [1E-5], testingFunction,(X_test, y_test), 1)
+milr.RBERefftec(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(X_test, y_test), 1)
+# milr.RBERefftec(2, [1E-5], testingFunction,(X_test, y_test), 1)
 
-# model.set_weights(secureWeights)
+model.set_weights(secureWeights)
 # def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-milr.continousRecoveryTest(2, [1E-5], testingFunction, (X_test, y_test), 1)
-#model.set_weights(secureWeights)
+milr.continousRecoveryTest(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
+# model.set_weights(secureWeights)
 
 

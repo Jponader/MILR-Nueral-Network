@@ -21,20 +21,20 @@ import pathlib
 import random
 import h5py
 
-#model = VGG19(weights='imagenet')
+model = VGG19(weights='imagenet')
 
 #keras.backend.set_learning_phase(0)
 
 # Save Weights
-#model.save_weights('weights.h5')
+# model.save_weights('weights.h5')
 # model.load_weights()
 
 # Save Entire Model
-#model.save('model.h5')
+model.save('model.h5')
 model = keras.models.load_model('model.h5')
 
-"""
-path_val = '../../../TensorFlow/ImageNet/ILSVRC/Data/CLS-LOC/val'
+
+path_val = '../../../Imagenet/Valimages/'
 label_text = 'ILSVRC2012_validation_ground_truth.txt'
 
 data_root = pathlib.Path(path_val)
@@ -55,24 +55,22 @@ for paths in all_image_paths:
 	input_image = np.expand_dims(numpy_image, axis=0) 
 	input_image = preprocess_input(input_image)
 	imgs.append(input_image[0])
-	if i >= test_length:
-		break
-	i = i + 1
 
 imgs = np.array(imgs)
 
 
-#Single Image Classification
-img_path = '../ImageNet/ILSVRC/Data/CLS-LOC/val/ILSVRC2012_val_00000003.JPEG'
-img = load_img(img_path, target_size=(224, 224))
-x = img_to_array(img)
-x = np.expand_dims(x, axis=0)
-x = preprocess_input(x)
 
-preds = model.predict(x)
-print(preds)
-print(preds.argmax())
-print('Predicted:', decode_predictions(preds, top=3)[0])
+#Single Image Classification
+# img_path = '../../../Imagenet/Valimages/ILSVRC2012_val_00000003.JPEG'
+# img = load_img(img_path, target_size=(224, 224))
+# x = img_to_array(img)
+# x = np.expand_dims(x, axis=0)
+# x = preprocess_input(x)
+
+# preds = model.predict(x)
+# print(preds)
+# print(preds.argmax())
+# print('Predicted:', decode_predictions(preds, top=3)[0])
 
 
 # Label Matching From 
@@ -116,14 +114,37 @@ def top_k_accuracy(y_true, y_pred, k=1):
     argsorted_y = np.argsort(y_pred)[:,-k:]
     return np.any(argsorted_y.T == y_true, axis=0).mean()
 
-global_pred = model.predict(imgs[:test_length], verbose = 1)
-global_acc1 = top_k_accuracy(labels[:test_length], global_pred,1)
-global_acc5 = top_k_accuracy(labels[:test_length], global_pred,5)
+# global_pred = model.predict(imgs, verbose = 1)
+# global_acc1 = top_k_accuracy(labels, global_pred,1)
+# global_acc5 = top_k_accuracy(labels, global_pred,5)
+# print(global_acc1)
+# print(global_acc5)
 
-"""
+
 #model.summary()
 
 #print("Type: ")
 #print(type(model))
 
+def testingFunction(X_test, y_test):
+    global_pred = model.predict(X_test, verbose = 1)
+    global_acc1 = top_k_accuracy(y_test, global_pred,1)
+    print(global_acc1)
+    return global_acc1
+
+model= keras.models.load_model('model.h5')
+secureWeights = model.get_weights()
+
+#model.summary()
+
 milr = MILR(model)
+model.summary()
+
+# def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
+milr.RBERefftec(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(imgs, labels), 1)
+# milr.RBERefftec(2, [1E-5], testingFunction,(X_test, y_test), 1)
+
+model.set_weights(secureWeights)
+# def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
+milr.continousRecoveryTest(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (imgs, labels), 1)
+# model.set_weights(secureWeights)
