@@ -45,7 +45,7 @@ class MILR:
 		self.milrHead.initilize()
 
 	#Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
-	def continousRecoveryTest(self,rounds, error_Rate, TestingData, testNumber):
+	def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber):
 		if not os.path.exists('data'):
 			os.makedirs('data')
 		print("data/{}-continousRecoveryTest.csv".format(testNumber))
@@ -53,8 +53,9 @@ class MILR:
 		#fout.write()
 	
 		seed()
-		baslineAcc = self.model.evaluate(*TestingData)[1]
+		baslineAcc = testFunc(*TestingData)
 		print("Basline Accuracy:", baslineAcc)
+		beginRoundACC = baslineAcc
 
 		for z in range(1,rounds+1):
 			errorCount = 0
@@ -85,7 +86,7 @@ class MILR:
 				print(layer, layerErrorCount)
 			print(errorCount)
 
-			errAcc = self.model.evaluate(*TestingData)[1]
+			errAcc = testFunc(*TestingData)
 			print("Pre Scrubbing Round {} , Acurracyr".format(z),errAcc)
 
 			start_time = time.time()
@@ -108,15 +109,17 @@ class MILR:
 			if error:
 				print("Errors in round: ", z)
 
-			scrubAcc = self.model.evaluate(*TestingData)[1]
+			scrubAcc = testFunc(*TestingData)
 			print("Round {} , Acurracyr".format(z),scrubAcc)
 
-			fout.write("{},{},{},{},{},{},{},{},{},{},{}, {}\n".format(error_Rate, testNumber, z , baslineAcc, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError))
+			print("{},{},{},{},{},{},{},{},{},{},{}, {}\n".format(error_Rate, testNumber, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError))
+			fout.write("{},{},{},{},{},{},{},{},{},{},{}, {}\n".format(error_Rate, testNumber, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError))
+			beginRoundACC = scrubAcc
 
 		fout.close()
 
 	#Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
-	def RBERefftec(self,rounds, error_Rate, TestingData):
+	def RBERefftec(self,rounds, error_Rate, testFunc, TestingData):
 		if not os.path.exists('data'):
 			os.makedirs('data')
 		print("data/RBEREffect.csv")
@@ -126,7 +129,7 @@ class MILR:
 		rawWeights = self.model.get_weights()
 	
 		seed()
-		baslineAcc = self.model.evaluate(*TestingData)[1]
+		baslineAcc = testFunc(*TestingData)
 		print("Basline Accuracy:", baslineAcc)
 
 		for rates in error_Rate:
@@ -173,7 +176,7 @@ class MILR:
 					print(layer, layerErrorCount)
 				print(errorCount)
 
-				errAcc = self.model.evaluate(*TestingData)[1]
+				errAcc = testFunc(*TestingData)
 				print("Error ACC Round {} , Acurracyr".format(z),errAcc)
 
 				fout.write("{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag))

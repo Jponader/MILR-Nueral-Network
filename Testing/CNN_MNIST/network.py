@@ -81,6 +81,13 @@ model.save_weights('weights.h5')
 # Save Entire Model
 model.save('model.h5')
 """
+
+
+
+def testingFunction(X_test, y_test):
+	test_loss, test_acc = model.evaluate(X_test, y_test)
+	return test_acc
+
 model= keras.models.load_model('model.h5')
 secureWeights = model.get_weights()
 
@@ -88,16 +95,17 @@ secureWeights = model.get_weights()
 
 milr = MILR(model)
 
-milr.RBERefftec(10, [1E-1,1E-2,1E-3,1E-4,1E-5,1E-6,1E-7,1E-8,1E-9,1E-10], (X_test, y_test))
-
-milr.continousRecoveryTest(20, 1E-5, (X_test, y_test), 1)
+# milr.RBERefftec(10, [1E-1,1E-2,1E-3,1E-4,1E-5,1E-6,1E-7,1E-8,1E-9,1E-10], testingFunction,(X_test, y_test))
+# milr.RBERefftec(10, [1E-4,1E-5], testingFunction,(X_test, y_test))
+# model.set_weights(secureWeights)
+milr.continousRecoveryTest(20, 1E-5, testingFunction, (X_test, y_test), 1)
 #model.set_weights(secureWeights)
-#milr.continousRecoveryTest(20, 1E-6, (X_test, y_test), 2)
+#milr.continousRecoveryTest(20, 1E-6, testingFunction, (X_test, y_test), 2)
 #model.set_weights(secureWeights)
-#milr.continousRecoveryTest(20, 1E-7, (X_test, y_test), 3)
+#milr.continousRecoveryTest(20, 1E-7, testingFunction, (X_test, y_test), 3)
 #model.set_weights(secureWeights)
-#milr.continousRecoveryTest(20, 1E-8, (X_test, y_test), 4)
+#milr.continousRecoveryTest(20, 1E-8, testingFunction, (X_test, y_test), 4)
 #model.set_weights(secureWeights)
-#milr.continousRecoveryTest(20, 1E-9, (X_test, y_test), 5)
+#milr.continousRecoveryTest(20, 1E-9, testingFunction, (X_test, y_test), 5)
 
 #milr.error_Sim(20, 1E-5, baseModel = model, TestingData =(X_test, y_test) )
