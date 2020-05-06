@@ -92,7 +92,7 @@ class MILR:
 				errAcc = testFunc(*TestingData)
 
 				start_time = time.time()
-				error, doubleError, log = self.scrubbing(retLog = True)
+				error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
 				end_time = time.time()
 				tTime =  end_time - start_time
 				print("Time: ", tTime)
@@ -108,8 +108,8 @@ class MILR:
 
 				scrubAcc = testFunc(*TestingData)
 
-				print("{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError))
-				fout.write("{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError))
+				print("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError, kernBiasError))
+				fout.write("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError,kernBiasError))
 				beginRoundACC = scrubAcc
 
 		fout.close()
@@ -130,6 +130,7 @@ class MILR:
 			for z in range(1,rounds+1):
 				print("\nBegin round {}, errorRate {}".format(z,rates))
 				doubleErrorFlag = False
+				kernBiasError = False
 				self.model.set_weights(rawWeights)
 				errorCount = 0
 				errorLayers = []
@@ -159,7 +160,7 @@ class MILR:
 							weights[j] = sets
 							if subLayerErr:
 								if localDoubelError:
-									doubleErrorFlag = True
+									kernBiasError = True
 								localDoubelError = True
 					if errorOnThisLayer:
 						if errorInCheck:
@@ -173,8 +174,8 @@ class MILR:
 
 				errAcc = testFunc(*TestingData)
 
-				fout.write("{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag))
-				print("{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag))
+				fout.write("{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError))
+				print("{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError))
 		fout.close()
 	"""
 	def nonSeqScrubbing(self, retLog=False):
@@ -185,6 +186,7 @@ class MILR:
 
 	def errorIdent(self):
 		doubleErrorFlag = False
+		kernBiasError = False
 		errorFlag = False
 		errorFlagLoc = 0
 		erroLog = []
@@ -195,7 +197,7 @@ class MILR:
 
 			if dbError:
 				print("Doubel Error Bias/Kern")
-				doubleErrorFlag = True
+				kernBiasError = True
 
 			if check:
 				if errorFlag:
@@ -215,13 +217,13 @@ class MILR:
 			erroLog.append((checkMark,errorFlagLoc, -1))
 		#erroLog.append((checkMark,len(self.milrModel)-1, -1))
 
-		return erroLog, doubleErrorFlag
+		return erroLog, doubleErrorFlag, kernBiasError
 
 	def scrubbing(self, retLog = False):
 		#if not self.sequential:
 			#return self.nonSeqScrubbing(retLog = retLog)
 
-		erroLog, doubleErrorFlag = self.errorIdent()
+		erroLog, doubleErrorFlag, kernBiasError = self.errorIdent()
 		print(erroLog)
 		
 		# Error Solving
@@ -246,9 +248,9 @@ class MILR:
 			self.milrModel[log[1]].kernelSolver(inputs, outputs)
 
 		if retLog:
-			return len(erroLog) > 0,doubleErrorFlag,  erroLog
+			return len(erroLog) > 0,doubleErrorFlag, kernBiasError,  erroLog
 
-		return len(erroLog) > 0, doubleErrorFlag
+		return len(erroLog) > 0, doubleErrorFlag, kernBiasError
 
 	def totalCost(self, printTotals=False, printLayers=False):
 		checkSum = 0

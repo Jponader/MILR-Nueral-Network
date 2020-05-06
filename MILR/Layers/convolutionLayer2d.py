@@ -103,9 +103,15 @@ class convolutionLayer2d(layerNode):
 					continue
 
 				answers = []
-				for j in range(varCount[i]):
+				for j in range(min(varCount[i],N*N)):
+					#print(varCount[i])
+					#print(N*N)
 					local = []
 					for k in range(varCount[i]):
+						#print(ep)
+						#print(ep[i])
+						#print(ep[i][k])
+						#print(int(math.floor((j*S))/N) + ep[i][k][0] ,(j*S)%N + ep[i][k][1],  ep[i][k][2])
 						local.append(inputs[0][int(math.floor((j*S))/N) + ep[i][k][0]]   [(j*S)%N + ep[i][k][1]]  [ep[i][k][2]])
 					answers.append(local)
 				
