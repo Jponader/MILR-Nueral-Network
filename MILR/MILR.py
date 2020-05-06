@@ -50,90 +50,85 @@ class MILR:
 			os.makedirs('data')
 		print("data/{}-continousRecoveryTest.csv".format(testNumber))
 		fout = open(("data/{}-continousRecoveryTest.csv".format(testNumber)), "w")
-		#fout.write()
 	
 		seed()
 		baslineAcc = testFunc(*TestingData)
-		print("Basline Accuracy:", baslineAcc)
 		beginRoundACC = baslineAcc
 
-		for z in range(1,rounds+1):
-			errorCount = 0
-			errorLayers = []
-			for l in range(len(self.milrModel)):
-				layer = self.milrModel[l]
-				errorOnThisLayer = False
-				layerErrorCount = 0
-				weights = layer.getWeights()
-				if weights is not None:
-					#print("pre",weights)
-					for j in range(len(weights)):
-						sets = np.array(weights[j])
-						setspre = sets[:]
-						shape = sets.shape
-						sets  = sets.flatten()
-						for i in range(len(sets)):
-							error, sets[i] = self.floatError(error_Rate, sets[i])
-							if error:
-								errorCount += 1
-								layerErrorCount+=1
-								if not errorOnThisLayer:
-									errorLayers.append(l)
-									errorOnThisLayer = True
-						sets = np.reshape(sets, shape)
-						weights[j] = sets
-				layer.setWeights(weights)
-				print(layer, layerErrorCount)
-			print(errorCount)
+		rawWeights = self.model.get_weights()
 
-			errAcc = testFunc(*TestingData)
-			print("Pre Scrubbing Round {} , Acurracyr".format(z),errAcc)
+		for rates in error_Rate:
+			self.model.set_weights(rawWeights)
+			for z in range(1,rounds+1):
+				print("\nBegin round {}, errorRate {}".format(z,rates))
+				errorCount = 0
+				errorLayers = []
+				for l in range(len(self.milrModel)):
+					layer = self.milrModel[l]
+					errorOnThisLayer = False
+					layerErrorCount = 0
+					weights = layer.getWeights()
+					if weights is not None:
+						#print("pre",weights)
+						for j in range(len(weights)):
+							sets = np.array(weights[j])
+							setspre = sets[:]
+							shape = sets.shape
+							sets  = sets.flatten()
+							for i in range(len(sets)):
+								error, sets[i] = self.floatError(rates, sets[i])
+								if error:
+									errorCount += 1
+									layerErrorCount+=1
+									if not errorOnThisLayer:
+										errorLayers.append(l)
+										errorOnThisLayer = True
+							sets = np.reshape(sets, shape)
+							weights[j] = sets
+					layer.setWeights(weights)
+					print(layer, layerErrorCount)
+				print(errorCount)
 
-			start_time = time.time()
-			error, doubleError, log = self.scrubbing(retLog = True)
-			end_time = time.time()
-			tTime =  end_time - start_time
-			print("Time: ", tTime)
+				errAcc = testFunc(*TestingData)
 
+				start_time = time.time()
+				error, doubleError, log = self.scrubbing(retLog = True)
+				end_time = time.time()
+				tTime =  end_time - start_time
+				print("Time: ", tTime)
 
+				if len(log) != len(errorLayers):
+					logAcc = False
+				else:
+					for l1, l2 in zip(log, errorLayers):
+						if l1[1] != l2:
+							logAcc = False
+							break
+					logAcc = True
 
-			if len(log) != len(errorLayers):
-				logAcc = False
-			else:
-				for l1, l2 in zip(log, errorLayers):
-					if l1[1] != l2:
-						logAcc = False
-						break
-				logAcc = True
+				scrubAcc = testFunc(*TestingData)
 
-			if error:
-				print("Errors in round: ", z)
-
-			scrubAcc = testFunc(*TestingData)
-			print("Round {} , Acurracyr".format(z),scrubAcc)
-
-			print("{},{},{},{},{},{},{},{},{},{},{}, {}\n".format(error_Rate, testNumber, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError))
-			fout.write("{},{},{},{},{},{},{},{},{},{},{}, {}\n".format(error_Rate, testNumber, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError))
-			beginRoundACC = scrubAcc
+				print("{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError))
+				fout.write("{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , beginRoundACC, errorCount, len(errorLayers), errAcc, len(log), logAcc, scrubAcc, tTime, doubleError))
+				beginRoundACC = scrubAcc
 
 		fout.close()
 
 	#Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
-	def RBERefftec(self,rounds, error_Rate, testFunc, TestingData):
+	def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber):
 		if not os.path.exists('data'):
 			os.makedirs('data')
-		print("data/RBEREffect.csv")
-		fout = open(("data/RBEREffect.csv"), "w")
-		#fout.write()
+		print("data/{}-RBEREffect.csv".format(testNumber))
+		fout = open("data/{}-RBEREffect.csv".format(testNumber), "w")
 
 		rawWeights = self.model.get_weights()
 	
 		seed()
 		baslineAcc = testFunc(*TestingData)
-		print("Basline Accuracy:", baslineAcc)
 
 		for rates in error_Rate:
 			for z in range(1,rounds+1):
+				print("\nBegin round {}, errorRate {}".format(z,rates))
 				doubleErrorFlag = False
 				self.model.set_weights(rawWeights)
 				errorCount = 0
@@ -177,7 +172,6 @@ class MILR:
 				print(errorCount)
 
 				errAcc = testFunc(*TestingData)
-				print("Error ACC Round {} , Acurracyr".format(z),errAcc)
 
 				fout.write("{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag))
 				print("{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag))
@@ -224,12 +218,11 @@ class MILR:
 		return erroLog, doubleErrorFlag
 
 	def scrubbing(self, retLog = False):
-		print("Start scrubbing")
-
 		#if not self.sequential:
 			#return self.nonSeqScrubbing(retLog = retLog)
 
 		erroLog, doubleErrorFlag = self.errorIdent()
+		print(erroLog)
 		
 		# Error Solving
 		
@@ -251,8 +244,6 @@ class MILR:
 
 			print("Recovered ", self.milrModel[log[1]])
 			self.milrModel[log[1]].kernelSolver(inputs, outputs)
-
-		print("scrubbing complete")
 
 		if retLog:
 			return len(erroLog) > 0,doubleErrorFlag,  erroLog
