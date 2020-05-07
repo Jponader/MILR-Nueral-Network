@@ -69,7 +69,7 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=0, mode='auto',baseline=None, restore_best_weights=False)
-model.fit(X_train, y_train, epochs=100, batch_size = 32, validation_data=(X_test, y_test))
+model.fit(X_train, y_train, epochs=75, batch_size = 32, validation_data=(X_test, y_test))
 
 
 test_loss, test_acc = model.evaluate(X_test, y_test)
