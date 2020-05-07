@@ -53,12 +53,12 @@ class MILR:
 	
 		seed()
 		baslineAcc = testFunc(*TestingData)
-		beginRoundACC = baslineAcc
 
 		rawWeights = self.model.get_weights()
 
 		for rates in error_Rate:
 			self.model.set_weights(rawWeights)
+			beginRoundACC = baslineAcc
 			for z in range(1,rounds+1):
 				print("\nBegin round {}, errorRate {}".format(z,rates))
 				errorCount = 0
