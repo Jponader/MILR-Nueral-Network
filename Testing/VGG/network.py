@@ -21,14 +21,14 @@ import pathlib
 import random
 import h5py
 
-model = VGG16(weights='imagenet')
+#model = VGG16(weights='imagenet')
 
 #keras.backend.set_learning_phase(0)
 
 # Save Weights
 # model.save_weights('weights.h5')
 # model.load_weights()
-
+"""
 # Save Entire Model
 model.save('model.h5')
 model = keras.models.load_model('model.h5')
@@ -136,19 +136,21 @@ def testingFunction(X_test, y_test):
 	global_acc1 = top_k_accuracy(y_test, global_pred,1)
 	print(global_acc1)
 	return global_acc1
-
+"""
 model= keras.models.load_model('model.h5')
 model.summary()
+
+print(model.get_config())
 
 secureWeights = model.get_weights()
 
 milr = MILR(model)
 
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-milr.RBERefftec(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(imgs[:testSize], labels[:testSize]), 1)
+#milr.RBERefftec(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(imgs[:testSize], labels[:testSize]), 1)
 # milr.RBERefftec(2, [1E-5], testingFunction,(X_test, y_test), 1)
 
-model.set_weights(secureWeights)
+#model.set_weights(secureWeights)
 # def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
 #milr.continousRecoveryTest(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (imgs[:testSize], labels[:testSize]), 1)
 # model.set_weights(secureWeights)

@@ -20,7 +20,7 @@ class convolutionLayer2d(layerNode):
 
 	def partialCheckpoint(self):
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
-		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())[0,0,:]
+		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())[0,0,0,:]
 		layerError = not np.allclose(checkdata, self.partialData, atol=1e-08)
 
 		print(self, layerError)
@@ -63,8 +63,8 @@ class convolutionLayer2d(layerNode):
 			outputs = biasLayer.backwardPass(self, outputs, data_format = self.Tlayer.data_format)
 
 		#self.keys ={'F':F, 'Z':Z, 'M':M, 'N':N, 'Y':Y, 'yPad':yPad, 'mPad':mPad}
-		M = self.keys['M']
 		Z = self.keys['Z']
+		M = self.keys['M']
 		F = self.keys['F']
 		N = self.keys['N']
 		Y = self.keys['Y']
@@ -98,6 +98,16 @@ class convolutionLayer2d(layerNode):
 			comparison = self.Tlayer._convolution_op(inputs, weightCopy)
 			outputs = np.array(outputs - comparison)
 
+			inputs = inputs[0]
+			if self.Tlayer.padding.upper() == "SAME":
+				padding = (((N-1)*S)+F-N)
+				left = int(math.floor(padding/2))
+				right = int(math.ceil(padding/2))
+				#Left Right Pad
+				inputs = tf.concat([tf.zeros((left,M,Z)),inputs,tf.zeros((right,M,Z))], 0)
+				#Top Bottom pad
+				inputs = tf.concat([tf.zeros((M+padding,left,Z)),inputs,tf.zeros((M+padding,right,Z))], 1)
+
 			for i in range(Y):
 				if varCount[i] == 0:
 					continue
@@ -112,7 +122,7 @@ class convolutionLayer2d(layerNode):
 						#print(ep[i])
 						#print(ep[i][k])
 						#print(int(math.floor((j*S))/N) + ep[i][k][0] ,(j*S)%N + ep[i][k][1],  ep[i][k][2])
-						local.append(inputs[0][int(math.floor((j*S))/N) + ep[i][k][0]]   [(j*S)%N + ep[i][k][1]]  [ep[i][k][2]])
+						local.append(inputs[int(math.floor((j*S))/N) + ep[i][k][0]]   [(j*S)%N + ep[i][k][1]]  [ep[i][k][2]])
 					answers.append(local)
 				
 				#sol = np.linalg.solve(np.array(answers),outputs[0][:,:,i].flatten()[:varCount[i]])
@@ -122,7 +132,7 @@ class convolutionLayer2d(layerNode):
 				for j in range(varCount[i]):
 					weightCopy[ep[i][j][0]][ep[i][j][1]][ep[i][j][2]][i] = sol[j]
 
-			#assert np.allclose(np.array(self.Tlayer.get_weights()[0]), weightCopy, atol=1e-2), "Kernel CRC not the same"
+			# assert np.allclose(np.array(self.Tlayer.get_weights()[0]), weightCopy, atol=1e-4), "Kernel CRC not the same"
 			ogWeights[0] = weightCopy
 			self.Tlayer.set_weights(ogWeights)
 			return 
@@ -141,8 +151,6 @@ class convolutionLayer2d(layerNode):
 		inputs = np.array(inputs)
 
 		subSol = []
-		k = self.Tlayer.kernel[:,:,:,0]
-		I = inputs[:,:]
 
 		for i in range(N):
 			for j in range(N):
@@ -168,7 +176,7 @@ class convolutionLayer2d(layerNode):
 		sol = np.reshape(sol,(F,F,Z,Y))
 
 		#Validation Data to be Removed
-		#assert np.allclose(sol, np.array(self.Tlayer.get_weights()[0]), atol=1e-4), "Kernel Solver Update"
+		#assert np.allclose(sol, np.array(self.Tlayer.get_weights()[0]), atol=1e-2), (sol,np.array(self.Tlayer.get_weights()[0]) )
 
 		ogWeights[0] = sol
 		self.Tlayer.set_weights(ogWeights)
@@ -230,17 +238,18 @@ class convolutionLayer2d(layerNode):
 		layer = self.Tlayer
 
 		partailInput = self.seededRandomTensor((1,*layer.input_shape[1:]))
-		self.partialData = tf.nn.conv2d(partailInput, layer.kernel, layer.strides, layer.padding.upper())[0,0,:]
+		self.partialData = tf.nn.conv2d(partailInput, layer.kernel, layer.strides, layer.padding.upper())[0,0,0,:]
 
 #Validation Data to be Removed
-		#if status == STAT.NO_INV:
-		#	skipKernel = False
-		#else:
-		#	skipKernel = True
+		print(self.partialData.shape)
+		# if status == STAT.NO_INV:
+		# 	skipKernel = False
+		# else:
+		# 	skipKernel = True
 
-		#self.rawIn = inputData
-		#self.rawKernel = self.Tlayer.kernel
-		#self.rawOut = tf.nn.conv2d(inputData, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())
+		# self.rawIn = inputData
+		# self.rawKernel = self.Tlayer.kernel
+		# self.rawOut = tf.nn.conv2d(inputData, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())
 #_____________
 
 		layer = self.Tlayer
@@ -340,23 +349,25 @@ class convolutionLayer2d(layerNode):
 # Validation to be Removed
 		
 		#Accuracy is low, finds place it doenst work
-		#self.biasError = False
-		#rekernel = self.kernelSolver(self.rawIn, self.rawOut)
-		#print("KERNEL SOLVER!!!")
+		# self.biasError = False
+		# rekernel = self.kernelSolver(self.rawIn, self.rawOut)
+		# print("KERNEL SOLVER!!!")
 
-		#if skipKernel:
-			#rekernel = self.backwardPass(outputs)
-			#assert np.allclose(rekernel, self.rawIn, atol=1e-4), "backward pass recovery"
-			#print("Backward Pass Completed")
+		# if skipKernel:
+		# 	rekernel = self.backwardPass(outputs)
+		# 	assert np.allclose(rekernel, self.rawIn, atol=1e-4), "backward pass recovery"
+		# 	print("Backward Pass Completed")
+
+		# self.rawbiasIn = outputs
 #_____________
 		
-		self.rawbiasIn = outputs
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
 				outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status, data_format='NCHW')
 			else:
 				outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status, data_format='NHWC')
+
 # Validation to be Removed
 			#biasLayer.kernelSolver(self, self.rawbiasIn, outputs)
 			#biasLayer.backwardPass(self, outputs, data_format = layer.data_format)
