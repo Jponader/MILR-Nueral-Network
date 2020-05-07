@@ -109,11 +109,11 @@ class denseLayer(layerNode):
 		self.partialData  = gen_math_ops.mat_mul(partailInput, self.Tlayer.kernel)[0,:]
 		
 # Validatioon - TO BE REMOVED
-		self.rewStatus = status
-		self.rawIn = inputData
-		self.rawKernel = self.Tlayer.kernel
-		inputData = math_ops.cast(inputData, self.Tlayer._compute_dtype)
-		self.rawOut  = gen_math_ops.mat_mul(inputData, self.Tlayer.kernel)
+		#self.rewStatus = status
+		#self.rawIn = inputData
+		#self.rawKernel = self.Tlayer.kernel
+		#inputData = math_ops.cast(inputData, self.Tlayer._compute_dtype)
+		#self.rawOut  = gen_math_ops.mat_mul(inputData, self.Tlayer.kernel)
 
 		layer = self.Tlayer
 		assert len(inputData.shape) == 2, "Error: Dense Input Not 2D"
@@ -154,8 +154,8 @@ class denseLayer(layerNode):
 		kernel = self.padder2D(layer.kernel,n, pPad - p, 1)
 
 # Validatioon - TO BE REMOVED
-		self.manIn = inputData
-		self.manKernel = kernel
+		#self.manIn = inputData
+		#self.manKernel = kernel
 		#print("	Padding out - IN - Kern", inputData.shape, kernel.shape)
 		#print("	Padding - m - p", mPad, pPad)
 #_________
@@ -164,7 +164,7 @@ class denseLayer(layerNode):
 		outputs = gen_math_ops.mat_mul(inputData, kernel)
 
 # Validatioon - TO BE REMOVED
-		self.manOut = outputs
+		#self.manOut = outputs
 
 		if self.padded == DN.WEIGHTPAD:
 			self.store = [outputs[m:,:p]]
@@ -174,7 +174,6 @@ class denseLayer(layerNode):
 			outputs = outputs[:m,:p]
 		else:
 			self.store = None
-#_________
 
 		self.keys ={'M':m, 'N':n, 'P':p, 'mPad':mPad, 'pPad':pPad}
 		
@@ -212,9 +211,7 @@ class denseLayer(layerNode):
 		print(self.Tlayer.kernel)
 		print(type(self.Tlayer.kernel))
 		"""
-		
-
-		biasIn = outputs
+		#biasIn = outputs
 #_________	
 
 		if layer.use_bias:

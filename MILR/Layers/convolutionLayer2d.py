@@ -127,7 +127,6 @@ class convolutionLayer2d(layerNode):
 			self.Tlayer.set_weights(ogWeights)
 			return 
 	#NON-CRC
-# Take into consideration additional data being stored, for layers that done meet the requirments
 		inputs = inputs[0]
 		if self.Tlayer.padding.upper() == "SAME":
 			padding = (((N-1)*S)+F-N)
@@ -210,7 +209,6 @@ class convolutionLayer2d(layerNode):
 
 			outputs = tf.concat([outputs, self.store[1]], 3)
 
-			
 		filterMatrix = np.array(filterMatrix)
 		outMatrix = np.array(outMatrix)
 
