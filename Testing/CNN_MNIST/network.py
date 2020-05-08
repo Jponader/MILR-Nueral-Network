@@ -96,7 +96,7 @@ secureWeights = model.get_weights()
 
 milr = MILR(model)
 model.summary()
-
+model.set_weights(secureWeights)
 
 
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)

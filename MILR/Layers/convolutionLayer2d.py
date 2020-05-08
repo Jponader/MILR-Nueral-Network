@@ -58,6 +58,7 @@ class convolutionLayer2d(layerNode):
 				inputs = tf.nn.conv2d(inputs, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())
 				ogWeights[1] = biasLayer.kernelSolver(self, inputs, outputs)
 				self.Tlayer.set_weights(ogWeights)
+				self.biasError = False
 				return 
 		
 			outputs = biasLayer.backwardPass(self, outputs, data_format = self.Tlayer.data_format)
