@@ -226,25 +226,30 @@ class convolutionLayer2d(layerNode):
 				out.append(np.reshape(np.linalg.solve(filterMatrix,outputs[0,i,j,:]),(F,F,Z)))
 
 		if self.Tlayer.padding.upper() == "SAME":
-			padding = (((N-1)*stride)+F-N)
+			padding = (((N-1)*stride)+F-M)
 			left = int(math.floor(padding/2))
 			right = int(math.ceil(padding/2))
 			M = M + padding
 
 			inMat = np.zeros((M,M,Z))
 
-			for i in range(0,M-F+1,stride):
-				for j in range(0,M-F+1,stride):
-					inMat[i:i+F, j:j+F] = out[i*(M-F+1) + j]
+			count = 0
+
+			for i in range(0,(M-F+1), stride):
+					for j in range(0,(M-F+1),stride):
+						inMat[i:i + F, j:j + F] = out[count]
+						count += 1
 
 			return np.reshape(inMat[left:-right,left:-right], (1,self.keys['M'],self.keys['M'],Z))
 
-
 		inMat = np.zeros((M,M,Z))
 
-		for i in range(0,M-F+1,stride):
-			for j in range(0,M-F+1,stride):
-				inMat[i:i+F, j:j+F] = out[i*(M-F+1) + j]
+		count = 0
+
+		for i in range(0,(M-F+1), stride):
+				for j in range(0,(M-F+1),stride):
+					inMat[i:i + F, j:j + F] = out[count]
+					count += 1
 
 		return np.reshape(inMat, (1,M,M,Z))
 
@@ -304,7 +309,6 @@ class convolutionLayer2d(layerNode):
 		#self.CRC = True
 		#self.padded = CN.NONE
 #_____________
-
 
 		#Invertiability Requirments
 		if status == STAT.NO_INV:
