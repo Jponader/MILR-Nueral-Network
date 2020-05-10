@@ -183,8 +183,6 @@ class convolutionLayer2d(layerNode):
 		self.Tlayer.set_weights(ogWeights)
 		return True
 
-#SAME PADDING
-	#Insert weights sets where some are Zeros
 	def backwardPass(self, outputs):
 		layer = self.Tlayer
 
@@ -193,7 +191,6 @@ class convolutionLayer2d(layerNode):
 
 		if layer.use_bias:
 			outputs = biasLayer.backwardPass(self, outputs, data_format = layer.data_format)
-
 
 		#self.keys ={'F':F, 'Z':Z, 'M':M, 'N':N, 'Y':Y, 'yPad':yPad, 'mPad':mPad}
 		F = self.keys['F']
@@ -204,7 +201,7 @@ class convolutionLayer2d(layerNode):
 		yPad = self.keys['yPad']
 		FFZ = F*F*Z
 
-		stride = layer.strides
+		stride = layer.strides[0]
 
 		filterMatrix = []
 		weights = np.array(layer.get_weights()[0])
@@ -212,14 +209,15 @@ class convolutionLayer2d(layerNode):
 		for i in range(Y):
 			filterMatrix.append(weights[:,:,:,i].flatten())
 
-		if self.padded == CN.INPUTPAD or self.padded == CN.BOTH:
-			for filters in np.array(self.seededRandomTensor((F,F,Z,yPad))).T:
-				filterMatrix.append(filters.flatten())
+		checkdata  = tf.nn.conv2d(self.rawIn, np.reshape(filterMatrix[0], (F,F,Z,1)), self.Tlayer.strides, self.Tlayer.padding.upper())
 
+		if self.padded == CN.INPUTPAD or self.padded == CN.BOTH:
+			pad =  np.array(self.seededRandomTensor((F,F,Z,yPad)))
+			for i in range(yPad):
+				filterMatrix.append(pad[:,:,:,i].flatten())
 			outputs = tf.concat([outputs, self.store[1]], 3)
 
 		filterMatrix = np.array(filterMatrix)
-		outMatrix = np.array(outMatrix)
 
 		out = []
 
@@ -227,13 +225,28 @@ class convolutionLayer2d(layerNode):
 			for j in range(N):
 				out.append(np.reshape(np.linalg.solve(filterMatrix,outputs[0,i,j,:]),(F,F,Z)))
 
+		if self.Tlayer.padding.upper() == "SAME":
+			padding = (((N-1)*stride)+F-N)
+			left = int(math.floor(padding/2))
+			right = int(math.ceil(padding/2))
+			M = M + padding
+
+			inMat = np.zeros((M,M,Z))
+
+			for i in range(0,M-F+1,stride):
+				for j in range(0,M-F+1,stride):
+					inMat[i:i+F, j:j+F] = out[i*(M-F+1) + j]
+
+			return np.reshape(inMat[left:-right,left:-right], (1,self.keys['M'],self.keys['M'],Z))
+
+
 		inMat = np.zeros((M,M,Z))
 
 		for i in range(0,M-F+1,stride):
 			for j in range(0,M-F+1,stride):
 				inMat[i:i+F, j:j+F] = out[i*(M-F+1) + j]
 
-		return inMat
+		return np.reshape(inMat, (1,M,M,Z))
 
 	def layerInitilizer(self, inputData, status):
 		layer = self.Tlayer
@@ -242,7 +255,7 @@ class convolutionLayer2d(layerNode):
 		self.partialData = tf.nn.conv2d(partailInput, layer.kernel, layer.strides, layer.padding.upper())[0,0,0,:]
 
 #Validation Data to be Removed
-		print(self.partialData.shape)
+		# print(self.partialData.shape)
 		# if status == STAT.NO_INV:
 		# 	skipKernel = False
 		# else:
@@ -269,14 +282,6 @@ class convolutionLayer2d(layerNode):
 		self.padded = CN.NONE
 		self.CRC = False
 		self.store = [None,None]
-
-		# N needs to be set based on padding type for convolution, to be addressed
-		"""
-		if layer.padding.upper() == "SAME":
-			N = M
-		else:
-			N = int(((M-F)/layer.strides[0])+1)
-		"""
 
 		mPad = N
 		yPad = FFZ -Y
@@ -356,7 +361,11 @@ class convolutionLayer2d(layerNode):
 
 		# if skipKernel:
 		# 	rekernel = self.backwardPass(outputs)
-		# 	assert np.allclose(rekernel, self.rawIn, atol=1e-4), "backward pass recovery"
+		# 	print(rekernel.shape)
+		# 	print(rekernel)
+		# 	print(self.rawIn.shape)
+		# 	print(self.rawIn)
+		# 	assert np.allclose(rekernel, self.rawIn, atol=1e-2), "backward pass recovery"
 		# 	print("Backward Pass Completed")
 
 		# self.rawbiasIn = outputs
