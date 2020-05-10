@@ -19,7 +19,6 @@ import h5py
 
 import time
 
-test_length = 10000
 
 # Saving Checkpoints while training
 import os
@@ -44,7 +43,7 @@ num_category = 10
 y_train = keras.utils.to_categorical(y_train, num_category)
 y_test = keras.utils.to_categorical(y_test, num_category)
 
-
+"""
 inputs = keras.Input(shape=input_shape)
 x = Conv2D(64, (3, 3),activation='relu', padding='same')(inputs)
 x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
@@ -106,7 +105,7 @@ model.summary()
 
 #model.set_weights(secureWeights)
 # def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-milr.continousRecoveryTest(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
+#milr.continousRecoveryTest(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
 # model.set_weights(secureWeights)
-"""
+
 
