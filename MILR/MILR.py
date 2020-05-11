@@ -174,8 +174,11 @@ class MILR:
 
 				errAcc = testFunc(*TestingData)
 
-				fout.write("{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError))
-				print("{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError))
+				error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
+				scrubAcc = testFunc(*TestingData)
+
+				fout.write("{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc))
+				print("{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc))
 		fout.close()
 	"""
 	def nonSeqScrubbing(self, retLog=False):
