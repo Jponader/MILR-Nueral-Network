@@ -256,7 +256,7 @@ class convolutionLayer2d(layerNode):
 
 	def layerInitilizer(self, inputData, status):
 		layer = self.Tlayer
-		pc = int(self.keys['N']/2)
+		pc = int(layer.output_shape[1]/2)
 		partailInput = self.seededRandomTensor((1,*layer.input_shape[1:]))
 		self.partialData = tf.nn.conv2d(partailInput, layer.kernel, layer.strides, layer.padding.upper())[0,pc,pc,:]
 

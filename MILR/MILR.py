@@ -180,6 +180,49 @@ class MILR:
 				fout.write("{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc))
 				print("{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc))
 		fout.close()
+
+
+	def LayerSpecefic(self,rounds, error_Rate, testFunc, TestingData, testNumber):
+		if not os.path.exists('data'):
+			os.makedirs('data')
+		print("data/{}-LayerSpecefic.csv".format(testNumber))
+		fout = open("data/{}-LayerSpecefic.csv".format(testNumber), "w")
+
+		rawWeights = self.model.get_weights()
+	
+		seed()
+		baslineAcc = testFunc(*TestingData)
+
+		for rates in error_Rate:
+			for l in range(len(self.milrModel)):
+				layer = self.milrModel[l]
+				weights = layer.getWeights()
+				if weights is not None:
+					for z in range(1,rounds+1):
+						errorCount = 0
+						weights = layer.getWeights()
+						for j in range(len(weights)):
+							sets = np.array(weights[j])
+							shape = sets.shape
+							sets  = sets.flatten()
+							for i in range(len(sets)):
+								error, sets[i] = self.floatError(rates, sets[i])
+								if error:
+									errorCount +=1
+							sets = np.reshape(sets, shape)
+							weights[j] = sets
+							layer.setWeights(weights)
+					
+							errAcc = testFunc(*TestingData)
+							error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
+							scrubAcc = testFunc(*TestingData)
+
+							fout.write("{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j,baslineAcc, errorCount, errAcc, scrubAcc))
+							print("{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j, baslineAcc, errorCount, errAcc, scrubAcc))
+							self.model.set_weights(rawWeights)
+							weights = layer.getWeights()
+
+		fout.close()
 	"""
 	def nonSeqScrubbing(self, retLog=False):
 		erroLog = []
