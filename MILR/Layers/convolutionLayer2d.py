@@ -20,7 +20,8 @@ class convolutionLayer2d(layerNode):
 
 	def partialCheckpoint(self):
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
-		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())[0,0,0,:]
+		pc = int(self.keys['N']/2)
+		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())[0,pc,pc,:]
 		layerError = not np.allclose(checkdata, self.partialData, atol=1e-08)
 
 		print(self, layerError)
@@ -255,9 +256,9 @@ class convolutionLayer2d(layerNode):
 
 	def layerInitilizer(self, inputData, status):
 		layer = self.Tlayer
-
+		pc = int(self.keys['N']/2)
 		partailInput = self.seededRandomTensor((1,*layer.input_shape[1:]))
-		self.partialData = tf.nn.conv2d(partailInput, layer.kernel, layer.strides, layer.padding.upper())[0,0,0,:]
+		self.partialData = tf.nn.conv2d(partailInput, layer.kernel, layer.strides, layer.padding.upper())[0,pc,pc,:]
 
 #Validation Data to be Removed
 		# print(self.partialData.shape)
