@@ -5,3 +5,4 @@ venv/
 *.DS_Store
 Testing/*/data
 Testing/UnitNet/*.h5
+Testing/data
