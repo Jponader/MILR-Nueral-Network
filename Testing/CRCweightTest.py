@@ -73,12 +73,12 @@ def bitsToFloat(b):
 if not os.path.exists('data'):
 			os.makedirs('data')
 
-print("data/CRCweightErr0.csv")
-fout = open("data/CRCweightErr0.csv", "w")
+print("data/CRCweightErr2limit.csv")
+fout = open("data/CRCweightErr2limit.csv", "w")
 
 
 runs = 100000
-numErrorRange = 16
+numErrorRange = 2
 
 for r in range(runs):
 		flag = True
@@ -86,7 +86,7 @@ for r in range(runs):
 		CRC = CRC2D(matrix)
 		errArray = []
 
-		numError = randint(0,15)
+		numError = randint(0,numErrorRange)
 
 		for i in range(numError):
 			x = randint(0,3)
@@ -99,8 +99,7 @@ for r in range(runs):
 
 			if flag:
 				errArray.append((x,y))
-				matrix[x][y] = 0
-				#random()
+				matrix[x][y] = random()
 
 
 		errArray = np.array(errArray)
