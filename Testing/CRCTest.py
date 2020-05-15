@@ -78,7 +78,7 @@ fout = open("data/CRCErr.csv", "w")
 
 error_Rate = [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7]
 runs = 100
-sizeRange = 10
+sizeRange = 7
 
 for size in range(1, sizeRange):
 	for r in range(runs):
@@ -100,6 +100,9 @@ for size in range(1, sizeRange):
 			errorLog = CRC2dErrorFinder(CRCErr, CRC)
 
 			allfound = True
+
+			if len(errorLog) < len(errArray):
+				allfound = False
 
 			for err in errArray:
 				flag = True

@@ -67,7 +67,6 @@ model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=0, mode='auto',baseline=None, restore_best_weights=False)
 model.fit(X_train, y_train, epochs=75, batch_size = 32, validation_data=(X_test, y_test))
 
 
@@ -99,13 +98,17 @@ model.summary()
 
 
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.RBERefftec(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(X_test, y_test), 1)
+#milr.RBERefftec(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(X_test, y_test), 2)
+#milr.RBERefftec(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(X_test, y_test), 2)
 # milr.RBERefftec(2, [1E-5], testingFunction,(X_test, y_test), 1)
+#model.set_weights(secureWeights)
 
 
 #model.set_weights(secureWeights)
 # def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.continousRecoveryTest(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
-# model.set_weights(secureWeights)
+#milr.continousRecoveryTest(40, [1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
 
 
+model.set_weights(secureWeights)
+#def v(self,rounds, error_Rate, testFunc, TestingData, testNumber)
+milr.LayerSpecefic(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)

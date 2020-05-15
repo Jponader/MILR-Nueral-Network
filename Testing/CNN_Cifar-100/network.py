@@ -44,22 +44,24 @@ num_category = 100
 y_train = keras.utils.to_categorical(y_train, num_category)
 y_test = keras.utils.to_categorical(y_test, num_category)
 
-
+"""
 inputs = keras.Input(shape=input_shape)
-x = Conv2D(64, (1, 1),activation='relu')(inputs)
-x = Conv2D(64, (1, 1), activation='relu')(x)
+x = Conv2D(64, (3, 3),activation='relu', padding='same')(inputs)
+x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
-x = Conv2D(128, (1, 1),activation='relu')(x)
-x = Conv2D(128, (1, 1),activation='relu')(x)
+x = Conv2D(128, (3, 3),activation='relu', padding='same')(x)
+x = Conv2D(128, (3, 3),activation='relu', padding='same')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
-x = Conv2D(256, (1, 1),activation='relu')(x)
-x = Conv2D(256, (1, 1),activation='relu')(x)
-x = Conv2D(256, (1, 1),activation='relu')(x)
+x = Conv2D(256, (3, 3),activation='relu', padding='same')(x)
+x = Conv2D(256, (3, 3),activation='relu', padding='same')(x)
+x = Conv2D(256, (3, 3),activation='relu', padding='same')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
 x = Flatten()(x)
+x = Dense(512, activation='relu')(x)
 x = Dense(256, activation='relu')(x)
 x = Dropout(0.5)(x)
 output = Dense(num_category, activation='softmax')(x)
+
 
 model = keras.Model(inputs=inputs, outputs=output)
 
@@ -67,9 +69,7 @@ model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=0, mode='auto',baseline=None, restore_best_weights=False)
-model.fit(X_train, y_train, epochs=500, batch_size = 128, validation_data=(X_test, y_test), callbacks=[stop])
-
+model.fit(X_train, y_train, epochs=75, batch_size = 32, validation_data=(X_test, y_test))
 
 test_loss, test_acc = model.evaluate(X_test, y_test)
 
@@ -80,7 +80,6 @@ model.save_weights('weights.h5')
 
 # Save Entire Model
 model.save('model.h5')
-
 
 """
 
@@ -97,6 +96,11 @@ milr = MILR(model)
 model.summary()
 
 
+test_loss, test_acc = model.evaluate(X_test, y_test)
+
+print('Test accuracy:', test_acc)
+
+
 
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
 #milr.RBERefftec(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(X_test, y_test), 1)
@@ -105,7 +109,7 @@ model.summary()
 
 #model.set_weights(secureWeights)
 # def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-milr.continousRecoveryTest(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
+# milr.continousRecoveryTest(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
 # model.set_weights(secureWeights)
-"""
+
 

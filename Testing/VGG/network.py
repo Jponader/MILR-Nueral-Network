@@ -7,7 +7,7 @@ from MILR.MILR import MILR
 import tensorflow as tf
 from tensorflow import keras
 from keras import optimizers
-from keras.applications.vgg16 import VGG16, preprocess_input, decode_predictions
+from keras.applications.vgg19 import VGG19, preprocess_input, decode_predictions
 from keras.preprocessing.image import load_img, img_to_array
 from keras.utils import to_categorical, HDF5Matrix
 
@@ -21,19 +21,20 @@ import pathlib
 import random
 import h5py
 
-#model = VGG16(weights='imagenet')
+model = VGG19(weights='imagenet')
 
 #keras.backend.set_learning_phase(0)
 
 # Save Weights
-# model.save_weights('weights.h5')
+model.save_weights('weights.h5')
 # model.load_weights()
-"""
+
 # Save Entire Model
 model.save('model.h5')
 model = keras.models.load_model('model.h5')
 
 
+"""
 path_val = '../../../Imagenet/Valimages/'
 label_text = 'ILSVRC2012_validation_ground_truth.txt'
 
@@ -139,8 +140,6 @@ def testingFunction(X_test, y_test):
 """
 model= keras.models.load_model('model.h5')
 model.summary()
-
-print(model.get_config())
 
 secureWeights = model.get_weights()
 
