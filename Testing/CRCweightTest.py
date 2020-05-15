@@ -73,46 +73,55 @@ def bitsToFloat(b):
 if not os.path.exists('data'):
 			os.makedirs('data')
 
-print("data/CRCErr.csv")
-fout = open("data/CRCErr.csv", "w")
+print("data/CRCweightErr0.csv")
+fout = open("data/CRCweightErr0.csv", "w")
 
-error_Rate = [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7]
-runs = 100
-sizeRange = 10
 
-for size in range(1, sizeRange):
-	for r in range(runs):
-		for rates in error_Rate:
-			matrix = np.random.rand(2**size,2**size)
-			CRC = CRC2D(matrix)
-			errArray = []
+runs = 100000
+numErrorRange = 16
 
-			for i in range(2**size):
-				for j in range(2**size):
+for r in range(runs):
+		flag = True
+		matrix = np.random.rand(4,4)
+		CRC = CRC2D(matrix)
+		errArray = []
 
-					err, matrix[i][j] = floatError(rates, matrix[i][j])
+		numError = randint(0,15)
 
-					if err:
-						errArray.append((i,j))
-
-			errArray = np.array(errArray)
-			CRCErr = CRC2D(matrix)
-			errorLog = CRC2dErrorFinder(CRCErr, CRC)
-
-			allfound = True
+		for i in range(numError):
+			x = randint(0,3)
+			y = randint(0,3)
 
 			for err in errArray:
-				flag = True
-				for inserts in errorLog:
-					if err[0] == inserts[0] and err[1] == inserts[1]:
-						flag = False
-				if flag:
-					allfound = False
-					break
+				#print(err)
+				if err == (x,y):
+					flag = False
+
+			if flag:
+				errArray.append((x,y))
+				matrix[x][y] = 0
+				#random()
 
 
-			fout.write("{};{};{};{};{};{};{}\n".format(rates, 2**size, r, len(errArray), len(errorLog), len(errorLog)-len(errArray), allfound ))
-			print("{};{};{};{};{};{};{}\n".format(rates, 2**size, r, len(errArray), len(errorLog), len(errorLog)-len(errArray),allfound))
+		errArray = np.array(errArray)
+
+
+		CRCErr = CRC2D(matrix)
+		errorLog = CRC2dErrorFinder(CRCErr, CRC)
+
+		allfound = True
+
+		for err in errArray:
+			flag = True
+			for inserts in errorLog:
+				if err[0] == inserts[0] and err[1] == inserts[1]:
+					flag = False
+			if flag:
+				allfound = False
+				break
+
+		fout.write("{};{};{};{};{}\n".format(r, len(errArray), len(errorLog), len(errorLog)-len(errArray), allfound))
+		print("{};{};{};{};{}\n".format(r, len(errArray), len(errorLog), len(errorLog)-len(errArray), allfound))
 
 
 
