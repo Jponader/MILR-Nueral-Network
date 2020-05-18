@@ -134,6 +134,7 @@ class MILR:
 				self.model.set_weights(rawWeights)
 				errorCount = 0
 				errorLayers = []
+				errLay = []
 				errorInCheck = False
 				for l in range(len(self.milrModel)):
 					layer = self.milrModel[l]
@@ -169,6 +170,7 @@ class MILR:
 					layer.setWeights(weights)
 					if errorOnThisLayer:
 						errorLayers.append((layer.name,layerErrorCount))
+						errLay.append(l)
 					print(layer, layerErrorCount)
 				print(errorCount)
 
@@ -177,10 +179,10 @@ class MILR:
 				error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
 				scrubAcc = testFunc(*TestingData)
 
-				if len(log) != len(errorLayers):
+				if len(log) != len(errLay):
 					logAcc = False
 				else:
-					for l1, l2 in zip(log, errorLayers):
+					for l1, l2 in zip(log, errLay):
 						if l1[1] != l2:
 							logAcc = False
 							break
