@@ -101,7 +101,7 @@ model.set_weights(secureWeights)
 
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
 #milr.RBERefftec(40, [1E-1,1.5E-1,1E-2,1.5E-2,1E-3,1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(X_test, y_test), 2)
-milr.RBERefftec(40, [1.5E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(X_test, y_test), 1)
+milr.RBERefftec(40, [1.5E-3,1E-3,1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction,(X_test, y_test), 1)
 # milr.RBERefftec(2, [1E-5], testingFunction,(X_test, y_test), 1)
 
 
