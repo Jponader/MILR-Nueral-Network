@@ -177,8 +177,17 @@ class MILR:
 				error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
 				scrubAcc = testFunc(*TestingData)
 
-				fout.write("{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc))
-				print("{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc))
+				if len(log) != len(errorLayers):
+					logAcc = False
+				else:
+					for l1, l2 in zip(log, errorLayers):
+						if l1[1] != l2:
+							logAcc = False
+							break
+					logAcc = True
+
+				fout.write("{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc))
+				print("{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc))
 		fout.close()
 
 
