@@ -188,8 +188,11 @@ class MILR:
 							break
 					logAcc = True
 
-				fout.write("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(errLay)))
-				print("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(errLay)))
+				if not logAcc:
+					print(log)
+
+				fout.write("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+				print("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
 		fout.close()
 
 
