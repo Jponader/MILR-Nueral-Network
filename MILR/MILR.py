@@ -225,6 +225,7 @@ class MILR:
 					layerErrorCount = 0
 					weights = layer.getWeights()
 					if weights is not None:
+						layer.biasError = False
 						localDoubelError = False
 						for j in range(len(weights)):
 							subLayerErr = False
@@ -241,11 +242,11 @@ class MILR:
 							sets = np.reshape(sets, shape)
 							weights[j] = sets
 							if subLayerErr:
-								if i == 1:
-									self.biasError = True
+								if l == 1:
+									layer.biasError = True
 								if localDoubelError:
 									kernBiasError = True
-									self.biasError = False
+									layer.biasError = False
 								localDoubelError = True
 					if errorOnThisLayer:
 						if errorInCheck:
@@ -260,14 +261,16 @@ class MILR:
 
 				errAcc = testFunc(*TestingData)
 
-				errorWeights = self.model.get_weights()
-				locallog = self.errorIdentFromErrorList(errLay)
-				self.recovery(locallog)
-				perAcc = testFunc(*TestingData)
-				self.model.set_weights(errorWeights)
+				# errorWeights = self.model.get_weights()
 
 				error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
 				scrubAcc = testFunc(*TestingData)
+				# self.model.set_weights(errorWeights)
+
+				# locallog = self.errorIdentFromErrorList(errLay)
+				# self.recovery(locallog)
+				# perAcc = testFunc(*TestingData)
+				# print(locallog)
 
 				if len(log) != len(errLay):
 					logAcc = False
@@ -281,8 +284,8 @@ class MILR:
 				if not logAcc:
 					print(log)
 
-				fout.write("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log),perAcc))
-				print("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log),perAcc))
+				fout.write("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+				print("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
 		fout.close()
 
 
