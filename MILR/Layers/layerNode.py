@@ -44,7 +44,7 @@ class layerNode:
 			for i in self.checkpointData.shape:
 				check = check*i
 
-		if self.end:
+		if self.end and self.outputData is not None:
 			hold = 1
 			for i in self.outputData.shape:
 				hold = hold*i
@@ -68,9 +68,12 @@ class layerNode:
 			for n in self.next:
 				n.initilize(status, inputData = outputData)
 		else:
-			#this might vary based on status and layer to be adjusted
-			self.outputData = outputData
-			print("End: ", self.end, flush = True)
+			if status ==  STAT.REQ_INV:
+				#this might vary based on status and layer to be adjusted
+				self.outputData = outputData
+				print("End: ", self.end, flush = True)
+			else:
+				self.outputData = None
 
 	# Assumptions
 		# Layers do not require checkpointing and status has no changes
