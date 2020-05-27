@@ -27,7 +27,7 @@ class convolutionLayer2d(layerNode):
 		print(self, layerError)
 
 		self.biasError = False
-		doubleError = False
+		self.doubleError = False
 
 		if self.Tlayer.use_bias:
 			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
@@ -35,9 +35,9 @@ class convolutionLayer2d(layerNode):
 
 			if layerError == True and self.biasError ==True:
 				self.biasError = False
-				doubleError = True	 	
+				self.doubleError = True	 	
 
-		return self.checkpointed, layerError or self.biasError, doubleError
+		return self.checkpointed, layerError or self.biasError, self.doubleError
 
 	def forwardPass(self, inputs):
 		layer = self.Tlayer
@@ -53,6 +53,8 @@ class convolutionLayer2d(layerNode):
 
 	def kernelSolver(self, inputs, outputs):
 		ogWeights = self.Tlayer.get_weights()
+		rawIn = inputs
+		rawOut = outputs
 
 		if self.Tlayer.use_bias:
 			if self.biasError:
@@ -137,52 +139,60 @@ class convolutionLayer2d(layerNode):
 			# assert np.allclose(np.array(self.Tlayer.get_weights()[0]), weightCopy, atol=1e-4), "Kernel CRC not the same"
 			ogWeights[0] = weightCopy
 			self.Tlayer.set_weights(ogWeights)
-			return 
+		else:
 	#NON-CRC
-		inputs = inputs[0]
-		if self.Tlayer.padding.upper() == "SAME":
-			padding = (((N-1)*S)+F-N)
-			left = int(math.floor(padding/2))
-			right = int(math.ceil(padding/2))
-			#Left Right Pad
-			inputs = tf.concat([tf.zeros((left,M,Z)),inputs,tf.zeros((right,M,Z))], 0)
-			#Top Bottom pad
-			inputs = tf.concat([tf.zeros((M+padding,left,Z)),inputs,tf.zeros((M+padding,right,Z))], 1)
+			inputs = inputs[0]
+			if self.Tlayer.padding.upper() == "SAME":
+				padding = (((N-1)*S)+F-N)
+				left = int(math.floor(padding/2))
+				right = int(math.ceil(padding/2))
+				#Left Right Pad
+				inputs = tf.concat([tf.zeros((left,M,Z)),inputs,tf.zeros((right,M,Z))], 0)
+				#Top Bottom pad
+				inputs = tf.concat([tf.zeros((M+padding,left,Z)),inputs,tf.zeros((M+padding,right,Z))], 1)
+			
+			inputMatrix = []
+			inputs = np.array(inputs)
+
+			subSol = []
+
+			for i in range(N):
+				for j in range(N):
+					inputMatrix.append(inputs[i*S:(i*S)+F,j*S:(j*S)+F,:].flatten())
+
+			outputs = np.array(outputs[0])
+			outputs = np.reshape(outputs,(N*N,Y))
 		
-		inputMatrix = []
-		inputs = np.array(inputs)
+			if self.padded == CN.BOTH or self.padded == CN.WEIGHTPAD:
+				mPad = inputSize 
+				newInput = np.array(self.seededRandomTensor((1,self.keys['mPad'],self.keys['mPad'],Z)))
+				n2 = self.store[0].shape[1]
 
-		subSol = []
+				for i in range(n2):
+					for j in range(n2):
+						inputMatrix.append(newInput[i*S:(i*S)+F,j*S:(j*S)+F,:].flatten())
 
-		for i in range(N):
-			for j in range(N):
-				inputMatrix.append(inputs[i*S:(i*S)+F,j*S:(j*S)+F,:].flatten())
+				copyOut = np.reshape(self.store[0],(n2*n2,Y))
+				outputs = np.concatenate((outputs,copyOut))
 
-		outputs = np.array(outputs[0])
-		outputs = np.reshape(outputs,(N*N,Y))
-	
-		if self.padded == CN.BOTH or self.padded == CN.WEIGHTPAD:
-			mPad = inputSize 
-			newInput = np.array(self.seededRandomTensor((1,self.keys['mPad'],self.keys['mPad'],Z)))
-			n2 = self.store[0].shape[1]
+			inputMatrix = np.array(inputMatrix)
+			sol = np.linalg.lstsq(inputMatrix, outputs, rcond=-1)[0]
+			sol = np.reshape(sol,(F,F,Z,Y))
 
-			for i in range(n2):
-				for j in range(n2):
-					inputMatrix.append(newInput[i*S:(i*S)+F,j*S:(j*S)+F,:].flatten())
+			#Validation Data to be Removed
+			#assert np.allclose(sol, np.array(self.Tlayer.get_weights()[0]), atol=1e-2), (sol,np.array(self.Tlayer.get_weights()[0]) )
 
-			copyOut = np.reshape(self.store[0],(n2*n2,Y))
-			outputs = np.concatenate((outputs,copyOut))
+			ogWeights[0] = sol
+			self.Tlayer.set_weights(ogWeights)
 
-		inputMatrix = np.array(inputMatrix)
-		sol = np.linalg.lstsq(inputMatrix, outputs, rcond=-1)[0]
-		sol = np.reshape(sol,(F,F,Z,Y))
-
-		#Validation Data to be Removed
-		#assert np.allclose(sol, np.array(self.Tlayer.get_weights()[0]), atol=1e-2), (sol,np.array(self.Tlayer.get_weights()[0]) )
-
-		ogWeights[0] = sol
-		self.Tlayer.set_weights(ogWeights)
-		return True
+		if self.doubleError:
+			if self.Tlayer.use_bias:
+				inputs = tf.nn.conv2d(rawIn, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())
+				ogWeights[1] = biasLayer.kernelSolver(self, inputs, rawOut)
+				self.Tlayer.set_weights(ogWeights)
+				self.biasError = False
+				self.doubleError = False
+			
 
 	def backwardPass(self, outputs):
 		layer = self.Tlayer

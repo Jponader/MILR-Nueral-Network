@@ -32,7 +32,7 @@ class denseLayer(layerNode):
 		print("layer-  ", layerError)
 
 		self.biasError = False
-		doubleError = False
+		self.doubleError = False
 
 		if self.Tlayer.use_bias:
 			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
@@ -40,10 +40,10 @@ class denseLayer(layerNode):
 
 			if layerError == True and self.biasError ==True:
 				self.biasError = False
-				doubleError = True
+				self.doubleError = True
 			 	
 
-		return self.checkpointed, layerError or self.biasError, doubleError
+		return self.checkpointed, layerError or self.biasError, self.doubleError
 
 	def forwardPass(self, inputs):
 		inputs = math_ops.cast(inputs, self.Tlayer._compute_dtype)
@@ -55,8 +55,9 @@ class denseLayer(layerNode):
 
 
 	def kernelSolver(self, inputs, outputs):
-
 		ogWeights = self.Tlayer.get_weights()
+		rawIn = inputs
+		rawOut = outputs
 
 		if self.Tlayer.use_bias:
 			if self.biasError:
@@ -80,7 +81,14 @@ class denseLayer(layerNode):
 
 		ogWeights[0] = np.linalg.solve( inputs, outputs)
 		self.Tlayer.set_weights(ogWeights)
-		return 
+		
+		if self.doubleError:
+			if self.Tlayer.use_bias:
+				inputs = gen_math_ops.mat_mul(inputs, self.Tlayer.kernel)
+				ogWeights[1] = biasLayer.kernelSolver(self, inputs, outputs)
+				self.Tlayer.set_weights(ogWeights)
+				self.biasError = False
+				self.doubleError = False
 		
 
 	def backwardPass(self, outputs):
