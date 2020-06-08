@@ -112,4 +112,4 @@ model.set_weights(secureWeights)
 #milr.continousRecoveryTest(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
 
 #def v(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-milr.LayerSpecefic(1, [1], testingFunction, (X_test, y_test), "WholeLayer-1")
+milr.LayerSpecefic(50, [1], testingFunction, (X_test, y_test), "WholeLayer-2")
