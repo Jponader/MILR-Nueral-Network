@@ -108,9 +108,9 @@ class convolutionLayer2d(layerNode):
 				left = int(math.floor(padding/2))
 				right = int(math.ceil(padding/2))
 				#Left Right Pad
-				inputs = tf.concat([tf.zeros((left,M,Z)),inputs,tf.zeros((right,M,Z))], 0)
+				inputs = tf.concat([tf.zeros((left,M,Z),dtype= self.Tlayer.dtype),inputs,tf.zeros((right,M,Z),dtype= self.Tlayer.dtype)], 0)
 				#Top Bottom pad
-				inputs = tf.concat([tf.zeros((M+padding,left,Z)),inputs,tf.zeros((M+padding,right,Z))], 1)
+				inputs = tf.concat([tf.zeros((M+padding,left,Z),dtype= self.Tlayer.dtype),inputs,tf.zeros((M+padding,right,Z),dtype= self.Tlayer.dtype)], 1)
 
 			for i in range(Y):
 				if varCount[i] == 0:
@@ -147,9 +147,9 @@ class convolutionLayer2d(layerNode):
 				left = int(math.floor(padding/2))
 				right = int(math.ceil(padding/2))
 				#Left Right Pad
-				inputs = tf.concat([tf.zeros((left,M,Z)),inputs,tf.zeros((right,M,Z))], 0)
+				inputs = tf.concat([tf.zeros((left,M,Z),dtype= self.Tlayer.dtype),inputs,tf.zeros((right,M,Z),dtype= self.Tlayer.dtype)], 0)
 				#Top Bottom pad
-				inputs = tf.concat([tf.zeros((M+padding,left,Z)),inputs,tf.zeros((M+padding,right,Z))], 1)
+				inputs = tf.concat([tf.zeros((M+padding,left,Z),dtype= self.Tlayer.dtype),inputs,tf.zeros((M+padding,right,Z),dtype= self.Tlayer.dtype)], 1)
 			
 			inputMatrix = []
 			inputs = np.array(inputs)

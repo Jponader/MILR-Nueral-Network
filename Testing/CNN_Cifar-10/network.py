@@ -26,6 +26,7 @@ checkpoint_path = "training/cp-{epoch:04d}.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_weights_only=True, verbose=1)
 
+tf.keras.backend.set_floatx('float64')
 
 # Data PreProcessing
 (X_train, y_train), (X_test, y_test) = cifar10.load_data()
@@ -67,7 +68,7 @@ model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-model.fit(X_train, y_train, epochs=75, batch_size = 32, validation_data=(X_test, y_test))
+model.fit(X_train, y_train, epochs=20, batch_size = 32, validation_data=(X_test, y_test))
 
 
 test_loss, test_acc = model.evaluate(X_test, y_test)
@@ -75,10 +76,12 @@ test_loss, test_acc = model.evaluate(X_test, y_test)
 print('Test accuracy:', test_acc)
 
 # Save Weights
-model.save_weights('weights.h5')
+model.save_weights('weights64.h5')
 
 # Save Entire Model
-model.save('model.h5')
+model.save('model64.h5')
+
+
 
 
 """
@@ -90,22 +93,26 @@ def testingFunction(X_test, y_test):
 model= keras.models.load_model('model.h5')
 secureWeights = model.get_weights()
 
+
+
 #model.summary()
 
 milr = MILR(model)
 model.summary()
+print(type(model.get_weights()[0][0][0][0][0]))
 
 model.set_weights(secureWeights)
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-milr.RBERefftec(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), 5)
+#milr.RBERefftec(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), 65)
+#milr.RBERefftec(40, [5E-3, 1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "whole-1")
 
-model.set_weights(secureWeights)
+#model.set_weights(secureWeights)
 # def eccMILR(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-milr.eccMILR(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7 ], testingFunction,(X_test, y_test), 5)
+#milr.eccMILR(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7 ], testingFunction,(X_test, y_test), 65)
 
 
 # def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
 #milr.continousRecoveryTest(40, [1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
 
 #def v(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.LayerSpecefic(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
+milr.LayerSpecefic(1, [1], testingFunction, (X_test, y_test), "WholeLayer-1")
