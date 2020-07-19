@@ -12,6 +12,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, InputLayer
 from tensorflow.keras import backend as k
 from keras.callbacks.callbacks import EarlyStopping
+from keras.preprocessing.image import ImageDataGenerator
 
 # Helper libraries
 import numpy as np
@@ -26,7 +27,7 @@ checkpoint_path = "training/cp-{epoch:04d}.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_weights_only=True, verbose=1)
 
-tf.keras.backend.set_floatx('float64')
+#tf.keras.backend.set_floatx('float64')
 
 # Data PreProcessing
 (X_train, y_train), (X_test, y_test) = cifar10.load_data()
@@ -44,18 +45,21 @@ num_category = 10
 y_train = keras.utils.to_categorical(y_train, num_category)
 y_test = keras.utils.to_categorical(y_test, num_category)
 
-"""
+
 inputs = keras.Input(shape=input_shape)
 x = Conv2D(64, (3, 3),activation='relu', padding='same')(inputs)
 x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
+x = Dropout(0.5)(x)
 x = Conv2D(128, (3, 3),activation='relu', padding='same')(x)
 x = Conv2D(128, (3, 3),activation='relu', padding='same')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
+x = Dropout(0.5)(x)
 x = Conv2D(256, (3, 3),activation='relu', padding='same')(x)
 x = Conv2D(256, (3, 3),activation='relu', padding='same')(x)
 x = Conv2D(256, (3, 3),activation='relu', padding='same')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
+x = Dropout(0.5)(x)
 x = Flatten()(x)
 #x = Dense(512, activation='relu')(x)
 x = Dense(256, activation='relu')(x)
@@ -68,18 +72,26 @@ model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-model.fit(X_train, y_train, epochs=20, batch_size = 32, validation_data=(X_test, y_test))
 
+datagen = ImageDataGenerator(width_shift_range=0.2, height_shift_range=0.2, horizontal_flip=True)
+	# prepare iterator
+it_train = datagen.flow(X_train, y_test, batch_size=64)
+	# fit model
+steps = int(X_train.shape[0] / 64)
+
+history = model.fit_generator(it_train, steps_per_epoch=steps, epochs=100, validation_data=(X_train, y_test), verbose=0)
+
+#model.fit(X_train, y_train, epochs=20, batch_size = 32, validation_data=(X_test, y_test))
 
 test_loss, test_acc = model.evaluate(X_test, y_test)
 
 print('Test accuracy:', test_acc)
 
 # Save Weights
-model.save_weights('weights64.h5')
+model.save_weights('weights2.h5')
 
 # Save Entire Model
-model.save('model64.h5')
+model.save('model2.h5')
 
 
 
@@ -115,4 +127,6 @@ model.set_weights(secureWeights)
 #milr.continousRecoveryTest(40, [1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
 
 #def v(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-milr.LayerSpecefic(50, [1], testingFunction, (X_test, y_test), "WholeLayer-2")
+milr.LayerSpecefic(50, [1], testingFunction, (X_test, y_test), "WholeLayer-Test")
+
+"""
