@@ -233,7 +233,7 @@ class MILR:
 							shape = sets.shape
 							sets  = sets.flatten()
 							for i in range(len(sets)):
-								error, sets[i], count = self.floatError(rates, sets[i])
+								error, sets[i], count = self.floatErrorWhole(rates, sets[i])
 								if error:
 									errorCount += count
 									layerErrorCount+=1
@@ -301,22 +301,24 @@ class MILR:
 		baslineAcc = testFunc(*TestingData)
 
 		for rates in error_Rate:
-			for l in range(len(self.milrModel)):
+			for l in range(7,len(self.milrModel)):
 				layer = self.milrModel[l]
 				weights = layer.getWeights()
 				if weights is not None:
 					for z in range(1,rounds+1):
 						errorCount = 0
 						weights = layer.getWeights()
-						for j in range(len(weights)):
+						for j in range(1,len(weights)):
 							sets = np.array(weights[j])
+							print(sets)
 							shape = sets.shape
-							sets  = sets.flatten()
-							for i in range(len(sets)):
-								error, sets[i] = self.floatError(rates, sets[i])
-								if error:
-									errorCount +=1
-							sets = np.reshape(sets, shape)
+							sets = np.random.rand(*shape)
+							# sets  = sets.flatten()
+							# for i in range(len(sets)):
+							# 	error, sets[i] = self.floatError(rates, sets[i])
+							# 	if error:
+							# 		errorCount +=1
+							# sets = np.reshape(sets, shape)
 							weights[j] = sets
 							layer.setWeights(weights)
 					
@@ -324,8 +326,8 @@ class MILR:
 							error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
 							scrubAcc = testFunc(*TestingData)
 
-							fout.write("{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j,baslineAcc, errorCount, errAcc, scrubAcc))
-							print("{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j, baslineAcc, errorCount, errAcc, scrubAcc))
+							fout.write("{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j,baslineAcc, errorCount, errAcc,scrubAcc))
+							print("{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j, baslineAcc, errorCount, errAcc,scrubAcc))
 							self.model.set_weights(rawWeights)
 							weights = layer.getWeights()
 
@@ -474,7 +476,7 @@ class MILR:
 		if random() < error_Rate:
 			error = error + 1
 			count +=1
-		for i in range(31):
+		for i in range(63):
 			error = error << 1
 			if random() < error_Rate:
 				error = error + 1
@@ -495,7 +497,7 @@ class MILR:
 		if random() < error_Rate:
 			error = error + 1
 			count +=1
-		for i in range(31):
+		for i in range(63):
 			error = error << 1
 			if random() < error_Rate:
 				error = error + 1
@@ -510,13 +512,27 @@ class MILR:
 		else:
 			return False, num, 0
 
+	def floatErrorWhole(self, error_Rate, num):
+		if random() < error_Rate:
+			num = self.floatToBits(num)
+			num = ~num
+			return True,self.bitsToFloat(num), 1
+		else:
+			return False, num, 0
+
 
 	def floatToBits(self, f):
+		#print(type(f))
+		#64 bit d
 		s = struct.pack('>f', f)
-		return struct.unpack('>I', s)[0]
+		#print(s)
+		#64 bit Q
+		return struct.unpack('>l', s)[0]
 
 	def bitsToFloat(self, b):
-		s = struct.pack('>I', b)
+		#print(hex(b))
+		s = struct.pack('>l', b)
+		#print(type(s))
 		return struct.unpack('>f', s)[0]
 
 

@@ -7,16 +7,16 @@ from MILR.MILR import MILR
 # TensorFlow and tf.keras
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras. datasets import cifar100
+from tensorflow.keras.datasets import cifar10
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, InputLayer
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, InputLayer, GlobalAveragePooling2D, Activation
 from tensorflow.keras import backend as k
 from keras.callbacks.callbacks import EarlyStopping
 
 # Helper libraries
 import numpy as np
 import h5py
-
+from  skimage import transform
 import time
 
 test_length = 10000
@@ -29,7 +29,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_weights_o
 
 
 # Data PreProcessing
-(X_train, y_train), (X_test, y_test) = cifar100.load_data()
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
 img_rows , img_cols = 32, 32
 
 input_shape = (img_rows, img_cols, 3)
@@ -40,36 +40,42 @@ input_shape = (img_rows, img_cols, 3)
 
 # Build Model
 
-num_category = 100
+num_category = 10
 y_train = keras.utils.to_categorical(y_train, num_category)
 y_test = keras.utils.to_categorical(y_test, num_category)
 
-"""
-inputs = keras.Input(shape=input_shape)
-x = Conv2D(64, (3, 3),activation='relu', padding='same')(inputs)
-x = Conv2D(64, (3, 3), activation='relu', padding='same')(x)
-x = MaxPooling2D(pool_size=(2, 2))(x)
-x = Conv2D(128, (3, 3),activation='relu', padding='same')(x)
-x = Conv2D(128, (3, 3),activation='relu', padding='same')(x)
-x = MaxPooling2D(pool_size=(2, 2))(x)
-x = Conv2D(256, (3, 3),activation='relu', padding='same')(x)
-x = Conv2D(256, (3, 3),activation='relu', padding='same')(x)
-x = Conv2D(256, (3, 3),activation='relu', padding='same')(x)
-x = MaxPooling2D(pool_size=(2, 2))(x)
-x = Flatten()(x)
-x = Dense(512, activation='relu')(x)
-x = Dense(256, activation='relu')(x)
-x = Dropout(0.5)(x)
-output = Dense(num_category, activation='softmax')(x)
 
+inputs = keras.Input(shape=(32,32,3))
+x = Conv2D(96, (3, 3),activation='relu',padding='same')(inputs)
+x = Conv2D(96, (3, 3),activation='relu',padding='same')(x)
+
+x = Conv2D(96, (3, 3),activation='relu',padding='same',strides=2)(x)
+
+x = Conv2D(192, (3, 3),activation='relu',padding='same')(x)
+x = Conv2D(192, (3, 3),activation='relu',padding='same')(x)
+
+x = Conv2D(192, (3, 3),activation='relu',padding='same',strides=2)(x)
+
+x = MaxPooling2D(pool_size=(3,3), strides=2)(x)
+
+x = Conv2D(192, (3, 3),activation='relu',padding='same')(x)
+x = Conv2D(192, (1, 1),activation='relu',padding='same')(x)
+x = Conv2D(10, (1, 1),activation='relu',padding='same')(x)
+x = Flatten()(x)
+x = Dropout(0.25)(x)
+output = Dense(num_category, activation='softmax')(x)
+model = keras.Model(inputs=inputs, outputs=output)
 
 model = keras.Model(inputs=inputs, outputs=output)
+
+optomizer = tf.keras.optimizers.Adam(
+    learning_rate=0.25)
 
 model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
-
-model.fit(X_train, y_train, epochs=75, batch_size = 32, validation_data=(X_test, y_test))
+model.summary()
+model.fit(X_train, y_train, epochs=350, batch_size = 16, validation_data=(X_test, y_test))
 
 test_loss, test_acc = model.evaluate(X_test, y_test)
 
@@ -81,7 +87,7 @@ model.save_weights('weights.h5')
 # Save Entire Model
 model.save('model.h5')
 
-"""
+
 
 def testingFunction(X_test, y_test):
 	test_loss, test_acc = model.evaluate(X_test, y_test)
