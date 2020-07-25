@@ -27,16 +27,18 @@ class denseLayer(layerNode):
 	def partialCheckpoint(self):
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
 		checkdata  = gen_math_ops.mat_mul(partailInput, self.Tlayer.kernel)[0,:]
-		layerError = not np.allclose(checkdata, self.partialData, atol=1e-08)
 
-		print("layer-  ", layerError)
+		#layerError = not np.allclose(checkdata, self.partialData, atol=1e-08)
+		layerError = not tf.reduce_all(tf.abs(checkdata - self.partialData) <= tf.abs(self.partialData) * 1e-5 + 1e-08)
+
+		#print("layer-  ", layerError)
 
 		self.biasError = False
 		self.doubleError = False
 
 		if self.Tlayer.use_bias:
 			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
-			print("bias-   ",self.biasError)
+			#print("bias-   ",self.biasError)
 
 			if layerError == True and self.biasError ==True:
 				self.biasError = False
@@ -49,7 +51,7 @@ class denseLayer(layerNode):
 		inputs = math_ops.cast(inputs, self.Tlayer._compute_dtype)
 		outputs = gen_math_ops.mat_mul(inputs, self.Tlayer.kernel)
 		if layer.use_bias:
-			outputs = biasLayer.forwardPass(outputs, layer.bias)
+			outputs = biasLayer.forwardPass(outputs)
 
 		return activationLayer.forwardPass(outputs, layer.activation)
 
@@ -79,9 +81,12 @@ class denseLayer(layerNode):
 			inputs = tf.concat([inputs, self.seededRandomTensor((mPad-m,n))],0)
 			outputs = tf.concat([outputs,self.store[0]], 0)
 
-		ogWeights[0] = np.linalg.solve( inputs, outputs)
+		ogWeights[0] = tf.linalg.solve(inputs, outputs)
 		self.Tlayer.set_weights(ogWeights)
-		
+
+		#ogWeights[0] = np.linalg.solve( inputs, outputs)
+		#self.Tlayer.set_weights(ogWeights)
+
 		if self.doubleError:
 			if self.Tlayer.use_bias:
 				inputs = gen_math_ops.mat_mul(inputs, self.Tlayer.kernel)
@@ -187,8 +192,8 @@ class denseLayer(layerNode):
 		
 
 #Print Summary Statistics
-		print('	Weights: ',self.Tlayer.kernel.shape)
-		print('	',self.padded)
+		#print('	Weights: ',self.Tlayer.kernel.shape)
+		#print('	',self.padded)
 		#print('	total Cost', self.cost())
 
 
@@ -223,7 +228,7 @@ class denseLayer(layerNode):
 #_________	
 
 		if layer.use_bias:
-			outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status)
+			outputs, status = biasLayer.layerInitilizer(self, outputs, status)
 
 		return activationLayer.staticInitilizer(outputs, layer.activation, status)
 

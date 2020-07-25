@@ -58,12 +58,12 @@ class layerNode:
 			inputData = self.startMetadata()
 			status = STAT.NO_INV
 
-		print("\n\n",self,"	", status, self.Tlayer.input_shape, self.Tlayer.output_shape, self.end)
+		#print("\n\n",self,"	", status, self.Tlayer.input_shape, self.Tlayer.output_shape, self.end)
 
 		assert inputData is not None, ("ERROR : No input data for next round")
 
 		outputData, status = self.layerInitilizer(inputData, status)
-		print('	Checkpointed: ', self.checkpointed, flush=True)
+		#print('	Checkpointed: ', self.checkpointed, flush=True)
 		if not self.end:
 			for n in self.next:
 				n.initilize(status, inputData = outputData)
@@ -71,7 +71,7 @@ class layerNode:
 			if status ==  STAT.REQ_INV:
 				#this might vary based on status and layer to be adjusted
 				self.outputData = outputData
-				print("End: ", self.end, flush = True)
+				#print("End: ", self.end, flush = True)
 			else:
 				self.outputData = None
 
@@ -87,7 +87,7 @@ class layerNode:
 		cost = 1
 		for i in inputs.shape:
 			cost = cost*i
-		print('	checkpoint: ',inputs.shape, cost)
+		#print('	checkpoint: ',inputs.shape, cost)
 
 	def getCheckpoint(self):
 		if self.inputLayer:
@@ -111,16 +111,20 @@ class layerNode:
 		return self.seed
 
 	def seededRandomTensor(self, shape):
-		np.random.seed(self.seeder())
-		return tf.convert_to_tensor(np.random.rand(*shape),  dtype= self.Tlayer.dtype)
+		#np.random.seed(self.seeder())
+		#return tf.convert_to_tensor(np.random.rand(*shape),  dtype= self.Tlayer.dtype)
+		tf.random.set_seed(self.seeder())
+		return tf.random.uniform(shape,dtype= self.Tlayer.dtype, seed=self.seeder())
 
 	def padder2D(self,inputs, x, y, axis):
 		out = self.seededRandomTensor((x,y))
 		return tf.concat([inputs,out], axis)
 
+#Might rewrite to use tf.segment_sum()
 	def CRC2D(self, data):
 		shape = data.shape
 		output = [np.zeros((shape[0],int(ceil(shape[1]/4)))),np.zeros((int(ceil(shape[0]/4)),shape[1]))]
+		#output = [tf.zeros((shape[0],int(ceil(shape[1]/4)))),tf.zeros((int(ceil(shape[0]/4)),shape[1]))]
 
 		for i in range(shape[0]):
 			for j in range(int(ceil(shape[1]/4))):
@@ -152,8 +156,9 @@ class layerNode:
 		return np.array(errorMatrix, dtype=np.int32)
 
 	def startMetadata(self):
-		np.random.seed(self.seeder())
-		return tf.convert_to_tensor(np.random.rand(1,*self.inputSize[0][1:]),  dtype= self.dtype)
+		#np.random.seed(self.seeder())
+		#return tf.convert_to_tensor(np.random.rand(1,*self.inputSize[0][1:]),  dtype= self.dtype)
+		return self.seededRandomTensor((1,*self.inputSize[0][1:]))
 
 	def setAsInputLayer(self):
 		self.inputLayer = True
