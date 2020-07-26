@@ -13,6 +13,8 @@ from MILR.Layers import biasLayer
 from MILR.Layers.layerNode import layerNode
 from MILR.status import status as STAT
 
+import time
+
 class convolutionLayer2d(layerNode):
 
 	def __init__ (self,layer, prev = None, next = None):
@@ -22,16 +24,19 @@ class convolutionLayer2d(layerNode):
 		partailInput = self.seededRandomTensor((1,*self.Tlayer.input_shape[1:]))
 		pc = int(self.keys['N']/2)
 		checkdata  = tf.nn.conv2d(partailInput, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())[0,pc,pc,:]
-		layerError = not np.allclose(checkdata, self.partialData, atol=1e-08)
 
-		print(self, layerError)
+
+		#layerError = not np.allclose(checkdata, self.partialData, atol=1e-08)
+		layerError = not tf.reduce_all(tf.abs(checkdata - self.partialData) <= tf.abs(self.partialData) * 1e-5 + 1e-08)
+
+		#print(self, layerError)
 
 		self.biasError = False
 		self.doubleError = False
 
 		if self.Tlayer.use_bias:
 			checkpointed, self.biasError = biasLayer.partialCheckpoint(self)
-			print("bias-   ",self.biasError)
+			#print("bias-   ",self.biasError)
 
 			if layerError == True and self.biasError ==True:
 				self.biasError = False
@@ -45,9 +50,9 @@ class convolutionLayer2d(layerNode):
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
-				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NCHW')
+				outputs = biasLayer.forwardPass(outputs, data_format='NCHW')
 			else:
-				outputs = biasLayer.forwardPass(outputs, layer.bias, data_format='NHWC')
+				outputs = biasLayer.forwardPass(outputs, data_format='NHWC')
 
 		return activationLayer.forwardPass(outputs, layer.activation)
 
@@ -120,18 +125,20 @@ class convolutionLayer2d(layerNode):
 				for j in range(min(varCount[i],N*N)):
 					#print(varCount[i])
 					#print(N*N)
-					local = []
+					#local = []
 					for k in range(varCount[i]):
 						#print(ep)
 						#print(ep[i])
 						#print(ep[i][k])
 						#print(int(math.floor((j*S))/N) + ep[i][k][0] ,(j*S)%N + ep[i][k][1],  ep[i][k][2])
-						local.append(inputs[int(math.floor((j*S))/N) + ep[i][k][0]]   [(j*S)%N + ep[i][k][1]]  [ep[i][k][2]])
-					answers.append(local)
+						answers = tf.concat([answers,[inputs[int(math.floor((j*S))/N) + ep[i][k][0]][(j*S)%N + ep[i][k][1]][ep[i][k][2]]]],0)
+					#answers = tf.concat([answers,[local]], -1)
+				answers = tf.reshape(answers,(min(varCount[i],N*N),varCount[i]))
 				
 				#sol = np.linalg.solve(np.array(answers),outputs[0][:,:,i].flatten()[:varCount[i]])
-			
-				sol = np.linalg.lstsq(np.array(answers),outputs[0][:,:,i].flatten()[:varCount[i]], rcond=-1)[0]
+				#sol = np.linalg.lstsq(np.array(answers),outputs[0][:,:,i].flatten()[:varCount[i]], rcond=-1)[0]
+
+				sol = tf.linalg.lstsq(answers, tf.reshape(outputs[0][:,:,i],(-1,1))[:varCount[i]], l2_regularizer=0.0, fast=False)
 
 				for j in range(varCount[i]):
 					weightCopy[ep[i][j][0]][ep[i][j][1]][ep[i][j][2]][i] = sol[j]
@@ -151,17 +158,20 @@ class convolutionLayer2d(layerNode):
 				#Top Bottom pad
 				inputs = tf.concat([tf.zeros((M+padding,left,Z),dtype= self.Tlayer.dtype),inputs,tf.zeros((M+padding,right,Z),dtype= self.Tlayer.dtype)], 1)
 			
-			inputMatrix = []
+			
 			inputs = np.array(inputs)
 
 			subSol = []
 
+			inputMatrix = []
 			for i in range(N):
 				for j in range(N):
+					#inputMatrix = tf.concat([inputMatrix,inputs[i*S:(i*S)+F,j*S:(j*S)+F,:].flatten()],0)
+					#inputMatrix = tf.stack([inputMatrix,[inputs[i*S:(i*S)+F,j*S:(j*S)+F,:].flatten()]])
 					inputMatrix.append(inputs[i*S:(i*S)+F,j*S:(j*S)+F,:].flatten())
-
-			outputs = np.array(outputs[0])
-			outputs = np.reshape(outputs,(N*N,Y))
+			
+			#outputs = np.array(outputs[0])
+			outputs = tf.reshape(outputs,(N*N,Y))
 		
 			if self.padded == CN.BOTH or self.padded == CN.WEIGHTPAD:
 				mPad = inputSize 
@@ -172,12 +182,13 @@ class convolutionLayer2d(layerNode):
 					for j in range(n2):
 						inputMatrix.append(newInput[i*S:(i*S)+F,j*S:(j*S)+F,:].flatten())
 
-				copyOut = np.reshape(self.store[0],(n2*n2,Y))
-				outputs = np.concatenate((outputs,copyOut))
+				copyOut = tf.reshape(self.store[0],(n2*n2,Y))
+				outputs = tf.concat([outputs,copyOut],0)
 
-			inputMatrix = np.array(inputMatrix)
-			sol = np.linalg.lstsq(inputMatrix, outputs, rcond=-1)[0]
-			sol = np.reshape(sol,(F,F,Z,Y))
+			#inputMatrix = np.array(inputMatrix)
+			#sol = np.linalg.lstsq(inputMatrix, outputs, rcond=-1)[0]
+			sol = tf.linalg.lstsq(inputMatrix, outputs, l2_regularizer=0.0, fast=False)
+			sol = tf.reshape(sol,(F,F,Z,Y))
 
 			#Validation Data to be Removed
 			#assert np.allclose(sol, np.array(self.Tlayer.get_weights()[0]), atol=1e-2), (sol,np.array(self.Tlayer.get_weights()[0]) )
@@ -198,6 +209,7 @@ class convolutionLayer2d(layerNode):
 		layer = self.Tlayer
 
 		if self.checkpointed:
+			print("Checkpoint Used")
 			return self.checkpointData
 
 		if layer.use_bias:
@@ -220,7 +232,7 @@ class convolutionLayer2d(layerNode):
 		for i in range(Y):
 			filterMatrix.append(weights[:,:,:,i].flatten())
 
-		checkdata  = tf.nn.conv2d(self.rawIn, np.reshape(filterMatrix[0], (F,F,Z,1)), self.Tlayer.strides, self.Tlayer.padding.upper())
+		#checkdata  = tf.nn.conv2d(self.rawIn, np.reshape(filterMatrix[0], (F,F,Z,1)), self.Tlayer.strides, self.Tlayer.padding.upper())
 
 		if self.padded == CN.INPUTPAD or self.padded == CN.BOTH:
 			pad =  np.array(self.seededRandomTensor((F,F,Z,yPad)))
@@ -234,7 +246,7 @@ class convolutionLayer2d(layerNode):
 
 		for i in range(N):
 			for j in range(N):
-				out.append(np.reshape(np.linalg.solve(filterMatrix,outputs[0,i,j,:]),(F,F,Z)))
+				out.append(tf.reshape(tf.linalg.solve(filterMatrix,outputs[0,i,j,:]),(F,F,Z)))
 
 		if self.Tlayer.padding.upper() == "SAME":
 			padding = (((N-1)*stride)+F-M)
@@ -242,7 +254,7 @@ class convolutionLayer2d(layerNode):
 			right = int(math.ceil(padding/2))
 			M = M + padding
 
-			inMat = np.zeros((M,M,Z))
+			inMat = tf.zeros((M,M,Z),dtype= self.Tlayer.dtype)
 
 			count = 0
 
@@ -251,9 +263,9 @@ class convolutionLayer2d(layerNode):
 						inMat[i:i + F, j:j + F] = out[count]
 						count += 1
 
-			return np.reshape(inMat[left:-right,left:-right], (1,self.keys['M'],self.keys['M'],Z))
+			return tf.reshape(inMat[left:-right,left:-right], (1,self.keys['M'],self.keys['M'],Z))
 
-		inMat = np.zeros((M,M,Z))
+		inMat = tf.zeros((M,M,Z),dtype= self.Tlayer.dtype)
 
 		count = 0
 
@@ -262,7 +274,7 @@ class convolutionLayer2d(layerNode):
 					inMat[i:i + F, j:j + F] = out[count]
 					count += 1
 
-		return np.reshape(inMat, (1,M,M,Z))
+		return tf.reshape(inMat, (1,M,M,Z))
 
 	def layerInitilizer(self, inputData, status):
 		layer = self.Tlayer
@@ -272,14 +284,14 @@ class convolutionLayer2d(layerNode):
 
 #Validation Data to be Removed
 		# print(self.partialData.shape)
-		# if status == STAT.NO_INV:
-		# 	skipKernel = False
-		# else:
-		# 	skipKernel = True
+		if status == STAT.NO_INV:
+			skipKernel = False
+		else:
+			skipKernel = True
 
-		# self.rawIn = inputData
-		# self.rawKernel = self.Tlayer.kernel
-		# self.rawOut = tf.nn.conv2d(inputData, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())
+		self.rawIn = inputData
+		self.rawKernel = self.Tlayer.kernel
+		self.rawOut = tf.nn.conv2d(inputData, self.Tlayer.kernel, self.Tlayer.strides, self.Tlayer.padding.upper())
 #_____________
 
 		layer = self.Tlayer
@@ -361,9 +373,9 @@ class convolutionLayer2d(layerNode):
 		self.keys ={'F':F, 'Z':Z, 'M':M, 'N':N, 'Y':Y, 'yPad':yPad, 'mPad':mPad}
 
 # Print Summary
-		print('	Weights: ',layer.kernel.shape)
-		print("	padded:", self.padded)
-		print("	CRC:", self.CRC)
+		# print('	Weights: ',layer.kernel.shape)
+		# print("	padded:", self.padded)
+		# print("	CRC:", self.CRC)
 		#print('	total Cost', self.cost())
 #_____________
 
@@ -376,10 +388,10 @@ class convolutionLayer2d(layerNode):
 
 		# if skipKernel:
 		# 	rekernel = self.backwardPass(outputs)
-		# 	print(rekernel.shape)
-		# 	print(rekernel)
-		# 	print(self.rawIn.shape)
-		# 	print(self.rawIn)
+		# 	# print(rekernel.shape)
+		# 	# print(rekernel)
+		# 	# print(self.rawIn.shape)
+		# 	# print(self.rawIn)
 		# 	assert np.allclose(rekernel, self.rawIn, atol=1e-2), "backward pass recovery"
 		# 	print("Backward Pass Completed")
 
@@ -389,9 +401,9 @@ class convolutionLayer2d(layerNode):
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':
-				outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status, data_format='NCHW')
+				outputs, status = biasLayer.layerInitilizer(self, outputs, status, data_format='NCHW')
 			else:
-				outputs, status = biasLayer.layerInitilizer(self, outputs, self.Tlayer.get_weights()[1], status, data_format='NHWC')
+				outputs, status = biasLayer.layerInitilizer(self, outputs, status, data_format='NHWC')
 
 # Validation to be Removed
 			#biasLayer.kernelSolver(self, self.rawbiasIn, outputs)

@@ -92,7 +92,7 @@ class MILR:
 				errAcc = testFunc(*TestingData)
 
 				start_time = time.time()
-				error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
+				error, doubleError,kernBiasError,TIME, log = self.scrubbing(retLog = True)
 				end_time = time.time()
 				tTime =  end_time - start_time
 				print("Time: ", tTime)
@@ -115,10 +115,10 @@ class MILR:
 		fout.close()
 
 	def eccMILR(self,rounds, error_Rate, testFunc, TestingData, testNumber):
-		if not os.path.exists('data'):
-			os.makedirs('data')
-		print("data/{}-eccMILR.csv".format(testNumber))
-		fout = open("data/{}-eccMILR.csv".format(testNumber), "w")
+		if not os.path.exists('data2'):
+			os.makedirs('data2')
+		print("data2/{}-eccMILR.csv".format(testNumber))
+		fout = open("data2/{}-eccMILR.csv".format(testNumber), "w")
 
 		rawWeights = self.model.get_weights()
 	
@@ -170,12 +170,12 @@ class MILR:
 					if errorOnThisLayer:
 						errorLayers.append((layer.name,layerErrorCount))
 						errLay.append(l)
-					print(layer, layerErrorCount)
-				print(errorCount)
+					#print(layer, layerErrorCount)
+				#print(errorCount)
 
 				errAcc = testFunc(*TestingData)
 
-				error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
+				error, doubleError,kernBiasError,TIME, log = self.scrubbing(retLog = True)
 				scrubAcc = testFunc(*TestingData)
 
 				if len(log) != len(errLay):
@@ -190,17 +190,18 @@ class MILR:
 				if not logAcc:
 					print(log)
 
-				fout.write("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
-				print("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
-		fout.close()
+				TIME = str(TIME[0]) + ";" + str(TIME[1])
 
+				fout.write("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, TIME, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+				print("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, TIME, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+		fout.close()
 
 	#Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
 	def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber):
-		if not os.path.exists('data'):
-			os.makedirs('data')
-		print("data/{}-RBEREffect.csv".format(testNumber))
-		fout = open("data/{}-RBEREffect.csv".format(testNumber), "w")
+		if not os.path.exists('data2'):
+			os.makedirs('data2')
+		print("data2/{}-RBEREffect.csv".format(testNumber))
+		fout = open("data2/{}-RBEREffect.csv".format(testNumber), "w")
 
 		rawWeights = self.model.get_weights()
 	
@@ -233,6 +234,7 @@ class MILR:
 							shape = sets.shape
 							sets  = sets.flatten()
 							for i in range(len(sets)):
+								#error, sets[i], count = self.floatErrorWhole(rates, sets[i])
 								error, sets[i], count = self.floatError(rates, sets[i])
 								if error:
 									errorCount += count
@@ -256,14 +258,14 @@ class MILR:
 					if errorOnThisLayer:
 						errorLayers.append((layer.name,layerErrorCount))
 						errLay.append(l)
-					print(layer, layerErrorCount)
-				print(errorCount)
+					#print(layer, layerErrorCount)
+				#print(errorCount)
 
 				errAcc = testFunc(*TestingData)
 
 				# errorWeights = self.model.get_weights()
 
-				error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
+				error, doubleError,kernBiasError, TIME, log = self.scrubbing(retLog = True)
 				scrubAcc = testFunc(*TestingData)
 				# self.model.set_weights(errorWeights)
 
@@ -281,19 +283,108 @@ class MILR:
 							break
 					logAcc = True
 
-				if not logAcc:
-					print(log)
+				TIME = str(TIME[0]) + ";" + str(TIME[1])
 
-				fout.write("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
-				print("{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+				fout.write("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, TIME, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+				print("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, TIME, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
 		fout.close()
 
+	def RBERefftecWhole(self,rounds, error_Rate, testFunc, TestingData, testNumber):
+		if not os.path.exists('data2'):
+			os.makedirs('data2')
+		print("data2/{}-RBEREffectWhole.csv".format(testNumber))
+		fout = open("data2/{}-RBEREffectWhole.csv".format(testNumber), "w")
+
+		rawWeights = self.model.get_weights()
+	
+		seed()
+		baslineAcc = testFunc(*TestingData)
+
+		for rates in error_Rate:
+			for z in range(1,rounds+1):
+				print("\nBegin round {}, errorRate {}".format(z,rates))
+				doubleErrorFlag = False
+				kernBiasError = False
+				self.model.set_weights(rawWeights)
+				errorCount = 0
+				errorLayers = []
+				errLay = []
+				errorInCheck = False
+				for l in range(len(self.milrModel)):
+					layer = self.milrModel[l]
+					if layer.checkpointed:
+						errorInCheck = False
+					errorOnThisLayer = False
+					layerErrorCount = 0
+					weights = layer.getWeights()
+					if weights is not None:
+						layer.biasError = False
+						localDoubelError = False
+						for j in range(len(weights)):
+							subLayerErr = False
+							sets = np.array(weights[j])
+							shape = sets.shape
+							sets  = sets.flatten()
+							for i in range(len(sets)):
+								error, sets[i], count = self.floatErrorWhole(rates, sets[i])
+								if error:
+									errorCount += count
+									layerErrorCount+=1
+									errorOnThisLayer = True
+									subLayerErr = True
+							sets = np.reshape(sets, shape)
+							weights[j] = sets
+							if subLayerErr:
+								if l == 1:
+									layer.biasError = True
+								if localDoubelError:
+									kernBiasError = True
+									layer.biasError = False
+								localDoubelError = True
+					if errorOnThisLayer:
+						if errorInCheck:
+							doubleErrorFlag = True
+						errorInCheck = True
+					layer.setWeights(weights)
+					if errorOnThisLayer:
+						errorLayers.append((layer.name,layerErrorCount))
+						errLay.append(l)
+					#print(layer, layerErrorCount)
+				#print(errorCount)
+
+				errAcc = testFunc(*TestingData)
+
+				# errorWeights = self.model.get_weights()
+
+				error, doubleError,kernBiasError, TIME, log = self.scrubbing(retLog = True)
+				scrubAcc = testFunc(*TestingData)
+				# self.model.set_weights(errorWeights)
+
+				# locallog = self.errorIdentFromErrorList(errLay)
+				# self.recovery(locallog)
+				# perAcc = testFunc(*TestingData)
+				# print(locallog)
+
+				if len(log) != len(errLay):
+					logAcc = False
+				else:
+					for l1, l2 in zip(log, errLay):
+						if l1[1] != l2:
+							logAcc = False
+							break
+					logAcc = True
+
+				TIME = str(TIME[0]) + ";" + str(TIME[1])
+
+				fout.write("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, TIME, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+				print("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, TIME, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+		fout.close()
 
 	def LayerSpecefic(self,rounds, error_Rate, testFunc, TestingData, testNumber):
-		if not os.path.exists('data'):
-			os.makedirs('data')
-		print("data/{}-LayerSpecefic.csv".format(testNumber))
-		fout = open("data/{}-LayerSpecefic.csv".format(testNumber), "w")
+		if not os.path.exists('data2'):
+			os.makedirs('data2')
+		print("data2/{}-LayerSpecefic.csv".format(testNumber))
+		fout = open("data2/{}-LayerSpecefic.csv".format(testNumber), "w")
 
 		rawWeights = self.model.get_weights()
 	
@@ -309,33 +400,26 @@ class MILR:
 						errorCount = 0
 						weights = layer.getWeights()
 						for j in range(len(weights)):
+							if j==0 and type(layer) == M.convolutionLayer2d and layer.CRC == True:
+								continue
 							sets = np.array(weights[j])
 							shape = sets.shape
-							sets  = sets.flatten()
-							for i in range(len(sets)):
-								error, sets[i] = self.floatError(rates, sets[i])
-								if error:
-									errorCount +=1
-							sets = np.reshape(sets, shape)
+							sets = np.random.rand(*shape)
 							weights[j] = sets
 							layer.setWeights(weights)
 					
 							errAcc = testFunc(*TestingData)
-							error, doubleError,kernBiasError, log = self.scrubbing(retLog = True)
+							error, doubleError,kernBiasError, TIME, log = self.scrubbing(retLog = True)
 							scrubAcc = testFunc(*TestingData)
 
-							fout.write("{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j,baslineAcc, errorCount, errAcc, scrubAcc))
-							print("{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j, baslineAcc, errorCount, errAcc, scrubAcc))
+							TIME = str(TIME[0]) + ";" + str(TIME[1])
+
+							fout.write("{};{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j,baslineAcc, errorCount, errAcc,scrubAcc, TIME))
+							print("{};{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j, baslineAcc, errorCount, errAcc,scrubAcc, TIME))
 							self.model.set_weights(rawWeights)
 							weights = layer.getWeights()
-
 		fout.close()
-	"""
-	def nonSeqScrubbing(self, retLog=False):
-		erroLog = []
 
-		self.milrHead.nonSeqScrubbing(erroLog)
-	"""
 	def errorIdentFromErrorList(self, list):
 		errorFlag = False
 		errorFlagLoc = 0
@@ -369,7 +453,6 @@ class MILR:
 
 		return erroLog
 
-
 	def errorIdent(self):
 		doubleErrorFlag = False
 		kernBiasError = False
@@ -382,7 +465,7 @@ class MILR:
 			check, error, dbError = self.milrModel[i].partialCheckpoint()
 
 			if dbError:
-				print("Doubel Error Bias/Kern")
+				#print("Doubel Error Bias/Kern")
 				kernBiasError = True
 
 			if check:
@@ -392,9 +475,9 @@ class MILR:
 				errorFlag = False
 
 			if error:
-				print("error:", self.milrModel[i])
+				#print("error:", self.milrModel[i])
 				if errorFlag:
-					print("Two Errors between checkpoints")
+					#print("Two Errors between checkpoints")
 					doubleErrorFlag = True
 				errorFlag = True
 				errorFlagLoc = i
@@ -422,24 +505,31 @@ class MILR:
 				for i in range(log[2]-1, log[1], -1):
 					outputs = self.milrModel[i].backwardPass(outputs)
 
-			print("Recovered ", self.milrModel[log[1]])
+			#print("Recovered ", self.milrModel[log[1]])
 			self.milrModel[log[1]].kernelSolver(inputs, outputs)
 
 	def scrubbing(self, retLog = False):
 		#if not self.sequential:
 			#return self.nonSeqScrubbing(retLog = retLog)
-
+		print("--Error Indent")
+		start = time.perf_counter()
 		erroLog, doubleErrorFlag, kernBiasError = self.errorIdent()
-		print(erroLog)
+		end = time.perf_counter()
+		identTime = (end-start)
+		# print(end-start)
+		# print(erroLog)
 		
 		# Error Solving
-		
+		print("--Error Solving")
+		start = time.perf_counter()
 		self.recovery(erroLog)
+		end = time.perf_counter()
+		recovTime = (end-start)
 
 		if retLog:
-			return len(erroLog) > 0,doubleErrorFlag, kernBiasError,  erroLog
+			return len(erroLog) > 0,doubleErrorFlag, kernBiasError, (identTime,recovTime), erroLog
 
-		return len(erroLog) > 0, doubleErrorFlag, kernBiasError
+		return len(erroLog) > 0, doubleErrorFlag, kernBiasError, (identTime,recovTime)
 
 	def totalCost(self, printTotals=False, printLayers=False):
 		checkSum = 0
@@ -474,7 +564,7 @@ class MILR:
 		if random() < error_Rate:
 			error = error + 1
 			count +=1
-		for i in range(31):
+		for i in range(30):
 			error = error << 1
 			if random() < error_Rate:
 				error = error + 1
@@ -495,7 +585,8 @@ class MILR:
 		if random() < error_Rate:
 			error = error + 1
 			count +=1
-		for i in range(31):
+		#63 for 64 bits
+		for i in range(30):
 			error = error << 1
 			if random() < error_Rate:
 				error = error + 1
@@ -510,15 +601,27 @@ class MILR:
 		else:
 			return False, num, 0
 
+	def floatErrorWhole(self, error_Rate, num):
+		if random() < error_Rate:
+			num = self.floatToBits(num)
+			num = ~num
+			return True,self.bitsToFloat(num), 1
+		else:
+			return False, num, 0
 
 	def floatToBits(self, f):
+		#print(type(f))
+		#64 bit d
 		s = struct.pack('>f', f)
-		return struct.unpack('>I', s)[0]
+		#print(s)
+		#64 bit Q
+		return struct.unpack('>l', s)[0]
 
 	def bitsToFloat(self, b):
-		s = struct.pack('>I', b)
+		#print(hex(b))
+		s = struct.pack('>l', b)
+		#print(type(s))
 		return struct.unpack('>f', s)[0]
-
 
 	def buildMILRModel(self):
 		self.config = self.model.get_config()['layers']
