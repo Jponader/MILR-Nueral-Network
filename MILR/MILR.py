@@ -170,8 +170,8 @@ class MILR:
 					if errorOnThisLayer:
 						errorLayers.append((layer.name,layerErrorCount))
 						errLay.append(l)
-					print(layer, layerErrorCount)
-				print(errorCount)
+					#print(layer, layerErrorCount)
+				#print(errorCount)
 
 				errAcc = testFunc(*TestingData)
 
@@ -283,8 +283,96 @@ class MILR:
 							break
 					logAcc = True
 
-				if not logAcc:
-					print(log)
+				TIME = str(TIME[0]) + ";" + str(TIME[1])
+
+				fout.write("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, TIME, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+				print("{};{};{};{};{};{};{};{};{};{};{};{};{}\n".format(rates, z , baslineAcc, errorCount, len(errorLayers), errAcc, errorLayers, TIME, doubleErrorFlag, kernBiasError, scrubAcc, logAcc, len(log)))
+		fout.close()
+
+	def RBERefftecWhole(self,rounds, error_Rate, testFunc, TestingData, testNumber):
+		if not os.path.exists('data2'):
+			os.makedirs('data2')
+		print("data2/{}-RBEREffectWhole.csv".format(testNumber))
+		fout = open("data2/{}-RBEREffectWhole.csv".format(testNumber), "w")
+
+		rawWeights = self.model.get_weights()
+	
+		seed()
+		baslineAcc = testFunc(*TestingData)
+
+		for rates in error_Rate:
+			for z in range(1,rounds+1):
+				print("\nBegin round {}, errorRate {}".format(z,rates))
+				doubleErrorFlag = False
+				kernBiasError = False
+				self.model.set_weights(rawWeights)
+				errorCount = 0
+				errorLayers = []
+				errLay = []
+				errorInCheck = False
+				for l in range(len(self.milrModel)):
+					layer = self.milrModel[l]
+					if layer.checkpointed:
+						errorInCheck = False
+					errorOnThisLayer = False
+					layerErrorCount = 0
+					weights = layer.getWeights()
+					if weights is not None:
+						layer.biasError = False
+						localDoubelError = False
+						for j in range(len(weights)):
+							subLayerErr = False
+							sets = np.array(weights[j])
+							shape = sets.shape
+							sets  = sets.flatten()
+							for i in range(len(sets)):
+								error, sets[i], count = self.floatErrorWhole(rates, sets[i])
+								if error:
+									errorCount += count
+									layerErrorCount+=1
+									errorOnThisLayer = True
+									subLayerErr = True
+							sets = np.reshape(sets, shape)
+							weights[j] = sets
+							if subLayerErr:
+								if l == 1:
+									layer.biasError = True
+								if localDoubelError:
+									kernBiasError = True
+									layer.biasError = False
+								localDoubelError = True
+					if errorOnThisLayer:
+						if errorInCheck:
+							doubleErrorFlag = True
+						errorInCheck = True
+					layer.setWeights(weights)
+					if errorOnThisLayer:
+						errorLayers.append((layer.name,layerErrorCount))
+						errLay.append(l)
+					#print(layer, layerErrorCount)
+				#print(errorCount)
+
+				errAcc = testFunc(*TestingData)
+
+				# errorWeights = self.model.get_weights()
+
+				error, doubleError,kernBiasError, TIME, log = self.scrubbing(retLog = True)
+				scrubAcc = testFunc(*TestingData)
+				# self.model.set_weights(errorWeights)
+
+				# locallog = self.errorIdentFromErrorList(errLay)
+				# self.recovery(locallog)
+				# perAcc = testFunc(*TestingData)
+				# print(locallog)
+
+				if len(log) != len(errLay):
+					logAcc = False
+				else:
+					for l1, l2 in zip(log, errLay):
+						if l1[1] != l2:
+							logAcc = False
+							break
+					logAcc = True
 
 				TIME = str(TIME[0]) + ";" + str(TIME[1])
 
@@ -304,24 +392,19 @@ class MILR:
 		baslineAcc = testFunc(*TestingData)
 
 		for rates in error_Rate:
-			for l in range(7,len(self.milrModel)):
+			for l in range(len(self.milrModel)):
 				layer = self.milrModel[l]
 				weights = layer.getWeights()
 				if weights is not None:
 					for z in range(1,rounds+1):
 						errorCount = 0
 						weights = layer.getWeights()
-						for j in range(1,len(weights)):
+						for j in range(len(weights)):
+							if j==0 and type(layer) == M.convolutionLayer2d and layer.CRC == True:
+								continue
 							sets = np.array(weights[j])
-							print(sets)
 							shape = sets.shape
 							sets = np.random.rand(*shape)
-							# sets  = sets.flatten()
-							# for i in range(len(sets)):
-							# 	error, sets[i] = self.floatError(rates, sets[i])
-							# 	if error:
-							# 		errorCount +=1
-							# sets = np.reshape(sets, shape)
 							weights[j] = sets
 							layer.setWeights(weights)
 					
@@ -335,7 +418,6 @@ class MILR:
 							print("{};{};{};{};{};{};{};{};{}\n".format(rates, z , layer,j, baslineAcc, errorCount, errAcc,scrubAcc, TIME))
 							self.model.set_weights(rawWeights)
 							weights = layer.getWeights()
-
 		fout.close()
 
 	def errorIdentFromErrorList(self, list):
@@ -482,7 +564,7 @@ class MILR:
 		if random() < error_Rate:
 			error = error + 1
 			count +=1
-		for i in range(63):
+		for i in range(30):
 			error = error << 1
 			if random() < error_Rate:
 				error = error + 1

@@ -172,8 +172,13 @@ def backwardConv(layer):
 
 
 def main():
-	model = defualtModel()
-	backwardConv(model.layers[2])
+	#model = defualtModel()
+	#backwardConv(model.layers[2])
+
+	tf.random.set_seed(5)
+	print(tf.random.uniform((1,1,1), seed=5))
+	tf.random.set_seed(5)
+	print(tf.random.uniform((1,1,1), seed=5))
 
 
 if __name__ == '__main__':
