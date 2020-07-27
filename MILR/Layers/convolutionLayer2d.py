@@ -398,6 +398,8 @@ class convolutionLayer2d(layerNode):
 		# self.rawbiasIn = outputs
 #_____________
 		
+		if self.CRC:
+			print(self.name +"CRC")
 
 		if layer.use_bias:
 			if layer.data_format == 'channels_first':

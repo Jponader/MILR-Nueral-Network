@@ -400,8 +400,6 @@ class MILR:
 						errorCount = 0
 						weights = layer.getWeights()
 						for j in range(len(weights)):
-							if j==0 and type(layer) == M.convolutionLayer2d and layer.CRC == True:
-								continue
 							sets = np.array(weights[j])
 							shape = sets.shape
 							sets = np.random.rand(*shape)
@@ -409,8 +407,10 @@ class MILR:
 							layer.setWeights(weights)
 					
 							errAcc = testFunc(*TestingData)
-							error, doubleError,kernBiasError, TIME, log = self.scrubbing(retLog = True)
-							scrubAcc = testFunc(*TestingData)
+							scrubAcc = 0
+							if not (j==0 and type(layer) == M.convolutionLayer2d and layer.CRC == True):
+								error, doubleError,kernBiasError, TIME, log = self.scrubbing(retLog = True)
+								scrubAcc = testFunc(*TestingData)
 
 							TIME = str(TIME[0]) + ";" + str(TIME[1])
 
