@@ -400,6 +400,7 @@ class MILR:
 						errorCount = 0
 						weights = layer.getWeights()
 						for j in range(len(weights)):
+							TIME = (0,0)
 							sets = np.array(weights[j])
 							shape = sets.shape
 							sets = np.random.rand(*shape)
