@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import sys
 sys.path.append('../../')
 from MILR.MILR import MILR
+import MILR.MILRTesting as Test
 
 # TensorFlow and tf.keras
 import tensorflow as tf
@@ -101,13 +102,15 @@ model.summary()
 model.set_weights(secureWeights)
 #milr.RBERefftec(1, [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "test")
 
+Test.AESErrors(milr,40, [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+
 
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-# milr.RBERefftec(40, [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+#Test.RBERefftec(milr,40, [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
 model.set_weights(secureWeights)
 #milr.RBERefftec(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), 65)
-milr.RBERefftecWhole(40, [5E-3, 1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+#Test.RBERefftecWhole(40, [5E-3, 1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
 model.set_weights(secureWeights)
 # def eccMILR(self,rounds, error_Rate, testFunc, TestingData, testNumber)
@@ -118,4 +121,4 @@ model.set_weights(secureWeights)
 #milr.continousRecoveryTest(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
 
 #def v(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-milr.LayerSpecefic(50, [1], testingFunction, (X_test, y_test), "Round1")
+#milr.LayerSpecefic(50, [1], testingFunction, (X_test, y_test), "Round1")
