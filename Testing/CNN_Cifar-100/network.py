@@ -21,6 +21,8 @@ import h5py
 
 import time
 
+import MILR.MILRTesting as Test
+
 
 #tf.keras.backend.set_floatx('float64')
 
@@ -90,6 +92,9 @@ X_test = X_test/255
 #     if test_acc >= .9:
 #     	break
 
+
+model.summary()
+
 test_loss, test_acc = model.evaluate(X_test, y_test)
 
 print('Test accuracy:', test_acc)
@@ -109,13 +114,16 @@ secureWeights = model.get_weights()
 #model.summary()
 
 milr = MILR(model)
-model.summary()
 
 
 model.set_weights(secureWeights)
+
+Test.AESErrors(milr,40,[ 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+
+
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
 #milr.RBERefftec(40, [5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), 65)
-milr.RBERefftec(40, [5E-4], testingFunction,(X_test, y_test), "Round2")
+#milr.RBERefftec(40, [5E-4], testingFunction,(X_test, y_test), "Round2")
 
 model.set_weights(secureWeights)
 # def RBERefftecWhole(self,rounds, error_Rate, testFunc, TestingData, testNumber)
@@ -125,7 +133,7 @@ model.set_weights(secureWeights)
 #model.set_weights(secureWeights)
 # def eccMILR(self,rounds, error_Rate, testFunc, TestingData, testNumber)
 #milr.eccMILR(40, [5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round2")
-milr.eccMILR(40, [5E-4], testingFunction,(X_test, y_test), "Round2")
+#milr.eccMILR(40, [5E-4], testingFunction,(X_test, y_test), "Round2")
 
 
 # def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
