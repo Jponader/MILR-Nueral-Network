@@ -3,4 +3,4 @@ dev/
 venv/
 *.pyc
 *.DS_Store
-Testing/UnitNet/*.h5
+Testing/UnitNet/*.h5AES_Experiment/data
