@@ -118,7 +118,10 @@ milr = MILR(model)
 
 model.set_weights(secureWeights)
 
-Test.AESErrors(milr,40,[ 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+
+Test.AES_ECC_Errors(milr,40,[ 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+
+#Test.AESErrors(milr,40,[ 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
 
 # def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)

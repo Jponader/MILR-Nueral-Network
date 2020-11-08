@@ -142,7 +142,9 @@ model.summary()
 
 model.set_weights(secureWeights)
 
-Test.AESErrors(milr,40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+Test.AES_ECC_Errors(milr,40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+
+#Test.AESErrors(milr,40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 # def RBERefftecWhole(self,rounds, error_Rate, testFunc, TestingData, testNumber)
 #milr.RBERefftec(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), 65)
 # milr.RBERefftecWhole(40, [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
