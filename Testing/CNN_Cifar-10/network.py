@@ -134,30 +134,20 @@ secureWeights = model.get_weights()
 milr = MILR(model)
 model.summary()
 
+model.set_weights(secureWeights)
 
-#model.set_weights(secureWeights)
-# def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.RBERefftec(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), 65)
-#milr.RBERefftec(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+Test.AESErrors(milr,40, [math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
 model.set_weights(secureWeights)
 
-Test.AES_ECC_Errors(milr,40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+Test.AES_ECC_Errors(milr,40, [math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
-#Test.AESErrors(milr,40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
-# def RBERefftecWhole(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.RBERefftec(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), 65)
-# milr.RBERefftecWhole(40, [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+model.set_weights(secureWeights)
 
-#model.set_weights(secureWeights)
-# def eccMILR(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.eccMILR(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+Test.eccMILR(milr,40, [math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
+model.set_weights(secureWeights)
 
-# def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.continousRecoveryTest(40, [1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
-
-#def v(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.LayerSpecefic(50, [1], testingFunction, (X_test, y_test), "Round1")
+Test.RBERefftec(milr,40, [math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
 

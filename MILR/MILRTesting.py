@@ -89,10 +89,10 @@ def continousRecoveryTest(NET,rounds, error_Rate, testFunc, TestingData, testNum
 	fout.close()
 
 def eccMILR(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
-	if not os.path.exists('data2'):
-		os.makedirs('data2')
-	print("data2/{}-eccMILR.csv".format(testNumber))
-	fout = open("data2/{}-eccMILR.csv".format(testNumber), "w")
+	if not os.path.exists('data3'):
+		os.makedirs('data3')
+	print("data3/{}-eccMILR.csv".format(testNumber))
+	fout = open("data3/{}-eccMILR.csv".format(testNumber), "w")
 
 	rawWeights = NET.model.get_weights()
 
@@ -172,10 +172,10 @@ def eccMILR(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
 
 #Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
 def RBERefftec(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
-	if not os.path.exists('data2'):
-		os.makedirs('data2')
-	print("data2/{}-RBEREffect.csv".format(testNumber))
-	fout = open("data2/{}-RBEREffect.csv".format(testNumber), "w")
+	if not os.path.exists('data3'):
+		os.makedirs('data3')
+	print("data3/{}-RBEREffect.csv".format(testNumber))
+	fout = open("data3/{}-RBEREffect.csv".format(testNumber), "w")
 
 	rawWeights = NET.model.get_weights()
 
@@ -264,10 +264,10 @@ def RBERefftec(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
 	fout.close()
 
 def RBERefftecWhole(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
-	if not os.path.exists('data2'):
-		os.makedirs('data2')
-	print("data2/{}-RBEREffectWhole.csv".format(testNumber))
-	fout = open("data2/{}-RBEREffectWhole.csv".format(testNumber), "w")
+	if not os.path.exists('data3'):
+		os.makedirs('data3')
+	print("data3/{}-RBEREffectWhole.csv".format(testNumber))
+	fout = open("data3/{}-RBEREffectWhole.csv".format(testNumber), "w")
 
 	rawWeights = NET.model.get_weights()
 
@@ -355,10 +355,10 @@ def RBERefftecWhole(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
 	fout.close()
 
 def LayerSpecefic(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
-	if not os.path.exists('data2'):
-		os.makedirs('data2')
-	print("data2/{}-LayerSpecefic.csv".format(testNumber))
-	fout = open("data2/{}-LayerSpecefic.csv".format(testNumber), "w")
+	if not os.path.exists('data3'):
+		os.makedirs('data3')
+	print("data3/{}-LayerSpecefic.csv".format(testNumber))
+	fout = open("data3/{}-LayerSpecefic.csv".format(testNumber), "w")
 
 	rawWeights = NET.model.get_weights()
 
@@ -397,10 +397,10 @@ def LayerSpecefic(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
 
 #Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
 def AESErrors(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
-	if not os.path.exists('data2'):
-		os.makedirs('data2')
-	print("data2/{}-AESErrors.csv".format(testNumber))
-	fout = open("data2/{}-AESErrors.csv".format(testNumber), "w")
+	if not os.path.exists('data3'):
+		os.makedirs('data3')
+	print("data3/{}-AESErrors.csv".format(testNumber))
+	fout = open("data3/{}-AESErrors.csv".format(testNumber), "w")
 
 	rawWeights = NET.model.get_weights()
 
@@ -495,10 +495,10 @@ def AESErrors(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
 
 #Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
 def AES_ECC_Errors(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
-	if not os.path.exists('data2'):
-		os.makedirs('data2')
-	print("data2/{}-AESeccErrors.csv".format(testNumber))
-	fout = open("data2/{}-AESeccErrors.csv".format(testNumber), "w")
+	if not os.path.exists('data3'):
+		os.makedirs('data3')
+	print("data3/{}-AESeccErrors.csv".format(testNumber))
+	fout = open("data3/{}-AESeccErrors.csv".format(testNumber), "w")
 
 	rawWeights = NET.model.get_weights()
 

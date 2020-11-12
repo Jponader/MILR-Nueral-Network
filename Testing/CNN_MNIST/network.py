@@ -5,6 +5,7 @@ sys.path.append('../../')
 from MILR.MILR import MILR
 import MILR.MILRTesting as Test
 
+
 # TensorFlow and tf.keras
 import tensorflow as tf
 from tensorflow import keras
@@ -16,7 +17,7 @@ from tensorflow.keras import backend as k
 # Helper libraries
 import numpy as np
 import h5py
-
+import math
 import time
 
 test_length = 10000
@@ -100,24 +101,19 @@ model.summary()
 
 
 model.set_weights(secureWeights)
-#milr.RBERefftec(1, [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "test")
 
-Test.AES_ECC_Errors(milr,40, [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
-
-# def RBERefftec(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#Test.RBERefftec(milr,40, [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+Test.AESErrors(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
 model.set_weights(secureWeights)
-#milr.RBERefftec(40, [1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), 65)
-#Test.RBERefftecWhole(40, [5E-3, 1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+
+Test.AES_ECC_Errors(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
 model.set_weights(secureWeights)
-# def eccMILR(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-# milr.eccMILR(40,  [1E-3, 5E-4, 1E-4, 5E-5, 1E-5, 5E-6, 1E-6, 5E-7, 1E-7],testingFunction,(X_test, y_test), "Round1")
+
+Test.eccMILR(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+
+model.set_weights(secureWeights)
+
+Test.RBERefftec(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
 
-# def continousRecoveryTest(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.continousRecoveryTest(40, [1E-4,1.5E-4,1E-5,1.5E-5,1E-6,1.5E-6,1E-7,1.5E-7], testingFunction, (X_test, y_test), 1)
-
-#def v(self,rounds, error_Rate, testFunc, TestingData, testNumber)
-#milr.LayerSpecefic(50, [1], testingFunction, (X_test, y_test), "Round1")
