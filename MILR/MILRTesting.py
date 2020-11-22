@@ -20,10 +20,10 @@ import os
 
 #Raw bit Error Rate (RBER) each bit in the binary array will be flipped independently with some probability p 
 def continousRecoveryTest(NET,rounds, error_Rate, testFunc, TestingData, testNumber):
-	if not os.path.exists('data'):
-		os.makedirs('data')
-	print("data/{}-continousRecoveryTest.csv".format(testNumber))
-	fout = open(("data/{}-continousRecoveryTest.csv".format(testNumber)), "w")
+	if not os.path.exists('data3'):
+		os.makedirs('data3')
+	print("data3/{}-continousRecoveryTest.csv".format(testNumber))
+	fout = open(("data3/{}-continousRecoveryTest.csv".format(testNumber)), "w")
 
 	seed()
 	baslineAcc = testFunc(*TestingData)
@@ -50,7 +50,7 @@ def continousRecoveryTest(NET,rounds, error_Rate, testFunc, TestingData, testNum
 						shape = sets.shape
 						sets  = sets.flatten()
 						for i in range(len(sets)):
-							error, sets[i] = floatError(rates, sets[i])
+							error, sets[i], count = floatError(rates, sets[i])
 							if error:
 								errorCount += 1
 								layerErrorCount+=1

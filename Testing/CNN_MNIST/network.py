@@ -99,21 +99,24 @@ secureWeights = model.get_weights()
 milr = MILR(model)
 model.summary()
 
+Test.continousRecoveryTest(milr,100000, [ 1E-6], testingFunction,(X_test, y_test), "Round2")
 
-model.set_weights(secureWeights)
 
-Test.AESErrors(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
-model.set_weights(secureWeights)
+# model.set_weights(secureWeights)
 
-Test.AES_ECC_Errors(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+# Test.AESErrors(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
-model.set_weights(secureWeights)
+# model.set_weights(secureWeights)
 
-Test.eccMILR(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+# Test.AES_ECC_Errors(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
-model.set_weights(secureWeights)
+# model.set_weights(secureWeights)
 
-Test.RBERefftec(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+# Test.eccMILR(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
+
+# model.set_weights(secureWeights)
+
+# Test.RBERefftec(milr,40, [1E-3, math.sqrt(10)*1E-4, 1E-4, math.sqrt(10)*1E-5, 1E-5, math.sqrt(10)*1E-6, 1E-6, math.sqrt(10)*1E-7, 1E-7], testingFunction,(X_test, y_test), "Round1")
 
 
